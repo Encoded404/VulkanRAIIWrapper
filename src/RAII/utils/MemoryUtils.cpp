@@ -1,0 +1,174 @@
+#include "MemoryUtils.hpp"
+
+#include <algorithm>
+#include <cstdint>
+#include <optional>
+#include <stdexcept>
+#include <vector>
+
+
+
+namespace VulkanEngine::RAII::Utils {
+
+namespace {
+std::optional<uint32_t> find_memory_type_internal(VkPhysicalDevice physical_device,
+                                               uint32_t type_filter,
+                                               VkMemoryPropertyFlags properties) {
+    VkPhysicalDeviceMemoryProperties mem_properties{};
+    vkGetPhysicalDeviceMemoryProperties(physical_device, &mem_properties);
+
+    for (uint32_t i = 0; i < mem_properties.memoryTypeCount; ++i) {
+        if ((type_filter & (1u << i)) &&
+            (mem_properties.memoryTypes[i].propertyFlags & properties) == properties) {
+            return i;
+        }
+    }
+
+    return std::nullopt;
+}
+
+std::optional<uint32_t> try_find_memory_type(VkPhysicalDevice physical_device,
+                                          uint32_t type_filter,
+                                          VkMemoryPropertyFlags required,
+                                          VkMemoryPropertyFlags preferred) {
+    if (auto index = find_memory_type_internal(physical_device, type_filter, required | preferred)) {
+        return index;
+    }
+    if (preferred != 0) {
+        if (auto index = find_memory_type_internal(physical_device, type_filter, required | preferred)) {
+            return index;
+        }
+    }
+    if (required != 0) {
+        if (auto index = find_memory_type_internal(physical_device, type_filter, required)) {
+            return index;
+        }
+    }
+    return std::nullopt;
+}
+
+} // namespace
+
+uint32_t MemoryUtils::find_memory_type(VkPhysicalDevice physical_device,
+                                     uint32_t type_filter,
+                                     VkMemoryPropertyFlags properties) {
+    if (auto index = find_memory_type_internal(physical_device, type_filter, properties)) {
+        return *index;
+    }
+    throw std::runtime_error("Failed to find suitable memory type");
+}
+
+bool MemoryUtils::get_memory_budget(VkPhysicalDevice physical_device,
+                                  std::vector<VkDeviceSize>& heap_budgets,
+                                  std::vector<VkDeviceSize>& heap_usages) {
+    auto vk_get_physical_device_memory_properties2_ptr = vkGetPhysicalDeviceMemoryProperties2;
+    if (!vk_get_physical_device_memory_properties2_ptr) {
+        return false;
+    }
+
+    VkPhysicalDeviceMemoryBudgetPropertiesEXT budget_props{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_BUDGET_PROPERTIES_EXT};
+    VkPhysicalDeviceMemoryProperties2 properties{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2};
+    properties.pNext = &budget_props;
+
+    vk_get_physical_device_memory_properties2_ptr(physical_device, &properties);
+
+    uint32_t heap_count = properties.memoryProperties.memoryHeapCount;
+    heap_budgets.assign(budget_props.heapBudget, budget_props.heapBudget + heap_count);
+    heap_usages.assign(budget_props.heapUsage, budget_props.heapUsage + heap_count);
+
+    bool has_non_zero_budget = std::any_of(heap_budgets.begin(), heap_budgets.end(), [](VkDeviceSize value) {
+        return value != 0;
+    });
+
+    bool has_usage_data = std::any_of(heap_usages.begin(), heap_usages.end(), [](VkDeviceSize value) {
+        return value != 0;
+    });
+
+    return has_non_zero_budget || has_usage_data;
+}
+
+VkDeviceSize MemoryUtils::aligned_size(VkDeviceSize size, VkDeviceSize alignment) {
+    if (alignment == 0) {
+        return size;
+    }
+    VkDeviceSize remainder = size % alignment;
+    if (remainder == 0) {
+        return size;
+    }
+    return size + alignment - remainder;
+}
+
+VkMemoryPropertyFlags MemoryUtils::get_memory_type_properties(VkPhysicalDevice physical_device,
+                                                          uint32_t memory_type_index) {
+    VkPhysicalDeviceMemoryProperties mem_properties{};
+    vkGetPhysicalDeviceMemoryProperties(physical_device, &mem_properties);
+    if (memory_type_index >= mem_properties.memoryTypeCount) {
+        throw std::out_of_range("Memory type index out of range");
+    }
+    return mem_properties.memoryTypes[memory_type_index].propertyFlags;
+}
+
+bool MemoryUtils::is_memory_type_host_visible(VkPhysicalDevice physical_device, uint32_t memory_type_index) {
+    VkMemoryPropertyFlags flags = get_memory_type_properties(physical_device, memory_type_index);
+    return (flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0;
+}
+
+bool MemoryUtils::is_memory_type_device_local(VkPhysicalDevice physical_device, uint32_t memory_type_index) {
+    VkMemoryPropertyFlags flags = get_memory_type_properties(physical_device, memory_type_index);
+    return (flags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) != 0;
+}
+
+bool MemoryUtils::is_memory_type_host_coherent(VkPhysicalDevice physical_device, uint32_t memory_type_index) {
+    VkMemoryPropertyFlags flags = get_memory_type_properties(physical_device, memory_type_index);
+    return (flags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) != 0;
+}
+
+uint32_t MemoryUtils::get_optimal_buffer_memory_type(VkPhysicalDevice physical_device,
+                                                 VkDevice device,
+                                                 VkBuffer buffer,
+                                                 VkMemoryPropertyFlags preferred_properties,
+                                                 VkMemoryPropertyFlags required_properties) {
+    VkMemoryRequirements requirements{};
+    vkGetBufferMemoryRequirements(device, buffer, &requirements);
+
+    if (auto index = try_find_memory_type(physical_device,
+                                       requirements.memoryTypeBits,
+                                       required_properties,
+                                       preferred_properties)) {
+        return *index;
+    }
+
+    throw std::runtime_error("Failed to find suitable memory type for buffer");
+}
+
+uint32_t MemoryUtils::get_optimal_image_memory_type(VkPhysicalDevice physical_device,
+                                                VkDevice device,
+                                                VkImage image,
+                                                VkMemoryPropertyFlags preferred_properties,
+                                                VkMemoryPropertyFlags required_properties) {
+    VkMemoryRequirements requirements{};
+    vkGetImageMemoryRequirements(device, image, &requirements);
+
+    if (auto index = try_find_memory_type(physical_device,
+                                       requirements.memoryTypeBits,
+                                       required_properties,
+                                       preferred_properties)) {
+        return *index;
+    }
+
+    throw std::runtime_error("Failed to find suitable memory type for image");
+}
+
+VkDeviceSize MemoryUtils::calculate_aligned_buffer_size(VkDeviceSize size, VkDeviceSize min_alignment) {
+    return aligned_size(size, min_alignment);
+}
+
+VkDeviceSize MemoryUtils::get_non_coherent_atom_size(VkPhysicalDevice physical_device) {
+    VkPhysicalDeviceProperties properties{};
+    vkGetPhysicalDeviceProperties(physical_device, &properties);
+    return properties.limits.nonCoherentAtomSize;
+}
+
+} // namespace VulkanEngine::RAII::Utils
+
+

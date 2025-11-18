@@ -1,0 +1,79 @@
+---
+Checks: >-
+  modernize-*,
+  performance-*,
+  readability-identifier-naming,
+  clang-analyzer-*,
+  bugprone-*,
+  misc-*,
+
+  -modernize-use-trailing-return-type,
+  -modernize-use-auto,
+  -modernize-avoid-c-arrays,
+  -bugprone-easily-swappable-parameters,
+  -modernize-return-braced-init-list,
+
+  -misc-const-correctness
+
+  -performance-enum-size
+
+# misc-const-correctness disabled for the time being, should be reintroduced later when the codebase is more mature.
+
+WarningsAsErrors: ''
+
+HeaderFilterRegex: '.*'
+
+CheckOptions:
+  - key:    readability-identifier-naming.VariableCase
+    value:  lower_case
+  - key:    readability-identifier-naming.VariablePrefix
+    value:  ''
+  - key:    readability-identifier-naming.FunctionCase
+    value:  lower_case
+  - key:    readability-identifier-naming.FunctionPrefix
+    value:  ''
+  - key:    readability-identifier-naming.ParameterCase
+    value:  lower_case
+  - key:    readability-identifier-naming.ParameterPrefix
+    value:  ''
+  - key:    readability-identifier-naming.MemberCase
+    value:  lower_case
+  - key:    readability-identifier-naming.MemberPrefix
+    value:  ''
+  - key:    readability-identifier-naming.MemberSuffix
+    value:  '_'
+  - key:    readability-identifier-naming.PrivateMemberSuffix
+    value:  '_'
+  - key:    readability-identifier-naming.ProtectedMemberSuffix
+    value:  '_'
+  - key:    readability-identifier-naming.PublicMemberSuffix
+    value:  '_'
+  - key:    readability-identifier-naming.ClassCase
+    value:  CamelCase
+  - key:    readability-identifier-naming.StructCase
+    value:  CamelCase
+  - key:    readability-identifier-naming.EnumCase
+    value:  CamelCase
+  - key:    readability-identifier-naming.EnumConstantCase
+    value:  UPPER_CASE
+  - key:    readability-identifier-naming.ConstantCase
+    value:  aNy_CasE
+  - key:    readability-identifier-naming.TypedefCase
+    value:  CamelCase
+  - key:    readability-identifier-naming.TemplateParameterCase
+    value:  CamelCase
+  - key:    readability-identifier-naming.NamespaceCase
+    value:  CamelCase
+  - key:    readability-identifier-naming.MacroDefinitionCase
+    value:  UPPER_CASE
+  - key:    misc-include-cleaner.IgnoreHeaders
+    value:  '.*(volk|vulkan)/.*|.*vulkan_core\\.h|glm/.*' # Exclude Volk and Vulkan core headers from include cleaning so VK_* symbols don't require direct includes.
+
+---
+
+# Notes:
+# - `readability-identifier-naming` supports these cases: lower_case, UpperCamelCase (CamelCase), UPPER_CASE
+# - We use `lower_case` for variables/functions/parameters to approximate snake_case. clang-tidy doesn't have a
+#   direct `snake_case` token, but `lower_case` enforces lower letters separated by underscores.
+# - Types (classes/structs/typedefs/template parameters) use CamelCase (PascalCase).
+# - If some third-party/generated files need exceptions, create a nested `.clang-tidy` in that folder with `Checks: -readability-identifier-naming`

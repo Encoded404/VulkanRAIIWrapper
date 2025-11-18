@@ -1,0 +1,21 @@
+{
+  "name": "vulkanraiiwrapper",
+  "version": "0.1.0",
+  "description": "Standalone Vulkan RAII wrapper library",
+  "homepage": "https://github.com/Encoded404/VulkanRAIIWrapper",
+  "license": "MIT",
+  "dependencies": [
+    "volk",
+    "vulkan-memory-allocator",
+    {
+      "name": "sdl3",
+      "default-features": false,
+      "features": [
+        "vulkan",
+        "wayland",
+        "x11"
+      ]
+    }
+  ],
+  "builtin-baseline": "f4fc135de213885b8d072203d324976e4aa1f171"
+}
