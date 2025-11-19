@@ -62,7 +62,7 @@ add_library(VulkanRAIIWrapper STATIC
 add_library(VulkanEngineLib ALIAS VulkanRAIIWrapper)
 
 # Set C++ standard using target_compile_features
-target_compile_features(VulkanRAIIWrapper PUBLIC cxx_std_17)
+target_compile_features(VulkanRAIIWrapper PUBLIC cxx_std_20)
 
 # Compiler warnings and options
 target_compile_options(VulkanRAIIWrapper PRIVATE

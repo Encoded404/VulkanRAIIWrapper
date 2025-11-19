@@ -15,7 +15,7 @@ add_executable(VulkanRAIIWrapperTests
     test_main.cpp
 )
 
-target_compile_features(VulkanRAIIWrapperTests PRIVATE cxx_std_17)
+target_compile_features(VulkanRAIIWrapperTests PRIVATE cxx_std_20)
 
 # Compiler warnings
 target_compile_options(VulkanRAIIWrapperTests PRIVATE

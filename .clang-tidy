@@ -10,8 +10,9 @@ Checks: >-
   -modernize-use-trailing-return-type,
   -modernize-use-auto,
   -modernize-avoid-c-arrays,
-  -bugprone-easily-swappable-parameters,
   -modernize-return-braced-init-list,
+  -modernize-use-designated-initializers,
+  -bugprone-easily-swappable-parameters,
 
   -misc-const-correctness
 

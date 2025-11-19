@@ -2,11 +2,16 @@
 #define VULKAN_RAII_RENDERING_COMMAND_BUFFER_HPP
 
 #include <volk.h>
-#include <vector>
+#include <span>
 
 
 namespace VulkanEngine::RAII {
 
+// forward declare classes Renderer, Swapchain, RenderPass
+class Renderer;
+class Swapchain;
+class RenderPass;
+    
 class CommandPool; // Forward declaration
 class Device; // Forward declaration
 
@@ -55,13 +60,13 @@ public:
     void bind_descriptor_sets(VkPipelineBindPoint bind_point,
                            VkPipelineLayout layout,
                            uint32_t first_set,
-                           const std::vector<VkDescriptorSet>& descriptor_sets,
-                           const std::vector<uint32_t>& dynamic_offsets = {}) const;
+                           std::span<const VkDescriptorSet> descriptor_sets,
+                           std::span<const uint32_t> dynamic_offsets = {}) const;
 
     // Bind vertex buffers
     void bind_vertex_buffers(uint32_t first_binding,
-                          const std::vector<VkBuffer>& buffers,
-                          const std::vector<VkDeviceSize>& offsets) const;
+                          std::span<const VkBuffer> buffers,
+                          std::span<const VkDeviceSize> offsets) const;
 
     // Bind index buffer
     void bind_index_buffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType index_type) const;
@@ -74,7 +79,28 @@ public:
                      uint32_t first_index = 0, int32_t vertex_offset = 0, 
                      uint32_t first_instance = 0) const;
 
+    // Issue one or many indexed draws based on commands stored in a GPU buffer.
+    void draw_indexed_indirect(VkBuffer buffer,
+                               VkDeviceSize offset,
+                               uint32_t draw_count,
+                               uint32_t stride) const;
+
     // Render pass commands
+    // Standard: single clear value (most common). Builds VkRenderPassBeginInfo internally and calls vkCmdBeginRenderPass
+    void begin_render_pass(VkRenderPass render_pass,
+                           const VkExtent2D extent,
+                           VkFramebuffer framebuffer,
+                           const VkClearValue& clear_value,
+                           VkSubpassContents contents = VK_SUBPASS_CONTENTS_INLINE) const;
+
+    // Overload: multiple clear values via span (when available)
+    void begin_render_pass(VkRenderPass render_pass,
+                           const VkExtent2D extend,
+                           VkFramebuffer framebuffer,
+                           std::span<const VkClearValue> clear_values,
+                           VkSubpassContents contents = VK_SUBPASS_CONTENTS_INLINE) const;
+
+    // Advanced: directly pass a fully constructed VkRenderPassBeginInfo
     void begin_render_pass(const VkRenderPassBeginInfo& render_pass_begin, 
                         VkSubpassContents contents = VK_SUBPASS_CONTENTS_INLINE) const;
 
@@ -86,25 +112,35 @@ public:
     void pipeline_barrier(VkPipelineStageFlags src_stage_mask,
                         VkPipelineStageFlags dst_stage_mask,
                         VkDependencyFlags dependency_flags,
-                        const std::vector<VkMemoryBarrier>& memory_barriers = {},
-                        const std::vector<VkBufferMemoryBarrier>& buffer_memory_barriers = {},
-                        const std::vector<VkImageMemoryBarrier>& image_memory_barriers = {}) const;
+                        std::span<const VkMemoryBarrier> memory_barriers = {},
+                        std::span<const VkBufferMemoryBarrier> buffer_memory_barriers = {},
+                        std::span<const VkImageMemoryBarrier> image_memory_barriers = {}) const;
 
     // Copy commands
     void copy_buffer(VkBuffer src_buffer, VkBuffer dst_buffer, 
-                   const std::vector<VkBufferCopy>& regions) const;
+                   std::span<const VkBufferCopy> regions) const;
 
     void copy_image(VkImage src_image, VkImageLayout src_image_layout,
                    VkImage dst_image, VkImageLayout dst_image_layout,
-                   const std::vector<VkImageCopy>& regions) const;
+                   std::span<const VkImageCopy> regions) const;
 
     void copy_buffer_to_image(VkBuffer src_buffer, VkImage dst_image, 
                           VkImageLayout dst_image_layout,
-                          const std::vector<VkBufferImageCopy>& regions) const;
+                          std::span<const VkBufferImageCopy> regions) const;
 
     // Push constants
     void push_constants(VkPipelineLayout layout, VkShaderStageFlags stage_flags,
                       uint32_t offset, uint32_t size, const void* values) const;
+
+    void set_viewport(const VkViewport& viewport) {vkCmdSetViewport(commandBuffer_, 0, 1, &viewport);} // single
+    void set_viewports(uint32_t first_viewport, std::span<const VkViewport> viewports) {
+        vkCmdSetViewport(commandBuffer_, first_viewport, static_cast<uint32_t>(viewports.size()), viewports.empty() ? nullptr : viewports.data());
+    }   // multiple
+
+    void set_scissor(const VkRect2D& scissor) {vkCmdSetScissor(commandBuffer_, 0, 1, &scissor);} // single
+    void set_scissors(uint32_t first_scissor, std::span<const VkRect2D> scissors) {
+        vkCmdSetScissor(commandBuffer_, first_scissor, static_cast<uint32_t>(scissors.size()), scissors.empty() ? nullptr : scissors.data());
+    }   // multiple
 
 private:
     VkCommandBuffer commandBuffer_{VK_NULL_HANDLE};

@@ -1,13 +1,13 @@
 # VulkanRAIIWrapper
 
-A standalone RAII-centric C++17 wrapper layer around Vulkan objects (Instance, PhysicalDevice selection helpers, Device, Queues, Swapchain helpers, CommandPools, Images/Buffers via VMA, Debug Messenger, etc.). Designed for reuse across multiple Vulkan projects.
+A standalone RAII-centric C++20 wrapper layer around Vulkan objects (Instance, PhysicalDevice selection helpers, Device, Queues, Swapchain helpers, CommandPools, Images/Buffers via VMA, Debug Messenger, etc.). Designed for reuse across multiple Vulkan projects.
 
 ## Features
 
 Most features mirror those in the engine that are relevant to the RAII layer:
 - **Cross-platform support** - Works on Windows, Linux, and macOS
 - **RAII-based resource management** - Automatic cleanup and memory safety
-- **Modern C++17** - Leverages contemporary C++ features
+- **Modern C++20** - Leverages contemporary C++ features
 - **Dependency management** - Integrated vcpkg support for easy setup
 
 ## Status
