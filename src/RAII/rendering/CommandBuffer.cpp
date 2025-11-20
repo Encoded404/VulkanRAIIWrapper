@@ -2,12 +2,11 @@
 
 #include "CommandPool.hpp"
 #include "RAII/rendering/Renderer.hpp"
-#include "RAII/presentation/Swapchain.hpp"
-#include "RAII/rendering/RenderPass.hpp"
 
 #include <cstdint>
 #include <stdexcept>
 #include <cassert>
+#include <span> // for std::span
 
 
 namespace VulkanEngine::RAII {
