@@ -41,6 +41,11 @@ struct SDLApplicationConfig {
     bool enableValidation_ = true;
     bool enableVSync_ = true;
     uint32_t maxFramesInFlight_ = 3;
+
+    std::vector<const char*> validationLayers_ = {}; // Custom validation layers (if empty, default ones will be used)
+    std::vector<const char*> instanceExtensions_ = {}; // Additional instance extensions to enable
+    std::vector<const char*> deviceExtensions_ = {}; // Additional device extensions to enable
+    VkPhysicalDeviceFeatures requiredDeviceFeatures_ = {}; // Required physical device features
     
     // Optional application callbacks
     std::function<void(double delta_time)> updateCallback_;

@@ -137,8 +137,8 @@ bool PhysicalDevice::check_device_extension_support(const std::vector<const char
     vkEnumerateDeviceExtensionProperties(physicalDevice_, nullptr, &extension_count, available_extensions.data());
 
     std::vector<const char*> missing = required_extensions;
-    for (const auto& extension : available_extensions) {
-        auto it = std::remove_if(missing.begin(), missing.end(), [&](const char* name) {
+    for (const VkExtensionProperties& extension : available_extensions) {
+        std::vector<const char*>::iterator it = std::remove_if(missing.begin(), missing.end(), [&](const char* name) -> bool { // NOLINT
             return std::string(name) == extension.extensionName;
         });
         missing.erase(it, missing.end());
@@ -237,8 +237,11 @@ int PhysicalDevice::get_device_score() const {
     if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
         score += 1000;
     }
+    if (features.multiDrawIndirect) {
+        score += 200;
+    }
 
-    score += static_cast<int>(properties.limits.maxImageDimension2D);
+    score += static_cast<int>(properties.limits.maxImageDimension2D) / 4;
 
     if (!features.geometryShader) {
         score = 0;

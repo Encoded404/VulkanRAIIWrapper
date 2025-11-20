@@ -28,8 +28,9 @@ Instance::Instance(const std::string& application_name,
     if (validation_layers.empty()) {
         // No-op
     } else {
+        // this ensures that the debug utils extension is enabled if validation layers are requested
         const char* debug_ext = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
-        if (std::find(extensions.begin(), extensions.end(), debug_ext) == extensions.end()) {
+        if (std::ranges::find(extensions, debug_ext) == extensions.end()) {
             extensions.push_back(debug_ext);
         }
     }
@@ -139,15 +140,15 @@ std::vector<VkLayerProperties> Instance::get_available_layers() {
 }
 
 bool Instance::is_extension_supported(const std::string& extension) {
-    auto extensions = get_available_extensions();
-    return std::any_of(extensions.begin(), extensions.end(), [&](const VkExtensionProperties& props) {
+    std::vector<VkExtensionProperties> extensions = get_available_extensions();
+    return std::ranges::any_of(extensions.begin(), extensions.end(), [&](const VkExtensionProperties& props) {
         return extension == props.extensionName;
     });
 }
 
 bool Instance::is_layer_supported(const std::string& layer) {
-    auto layers = get_available_layers();
-    return std::any_of(layers.begin(), layers.end(), [&](const VkLayerProperties& props) {
+    std::vector<VkLayerProperties> layers = get_available_layers();
+    return std::ranges::any_of(layers.begin(), layers.end(), [&](const VkLayerProperties& props) {
         return layer == props.layerName;
     });
 }

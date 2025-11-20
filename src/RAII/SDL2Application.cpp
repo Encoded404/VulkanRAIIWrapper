@@ -319,7 +319,9 @@ bool SDLApplication::create_vulkan_objects() {
     }
 
     std::vector<const char*> required_extensions = Utils::SDLUtils::get_required_instance_extensions();
-    auto validation_layers = gather_validation_layers(config_.enableValidation_);
+    required_extensions.insert(required_extensions.end(), config_.instanceExtensions_.begin(), config_.instanceExtensions_.end());
+    std::vector<const char *> validation_layers = gather_validation_layers(config_.enableValidation_);
+    validation_layers.insert(validation_layers.end(), config_.validationLayers_.begin(), config_.validationLayers_.end());
 
     VkApplicationInfo app_info{VK_STRUCTURE_TYPE_APPLICATION_INFO};
     app_info.pApplicationName = config_.windowTitle_.c_str();
@@ -335,7 +337,8 @@ bool SDLApplication::create_vulkan_objects() {
     physicalDevice_ = std::make_unique<PhysicalDevice>(*instance_, surface_->get_handle());
 
     std::vector<const char*> device_extensions = {Constants::SWAPCHAIN_EXTENSION};
-    VkPhysicalDeviceFeatures features{};
+    device_extensions.insert(device_extensions.end(), config_.deviceExtensions_.begin(), config_.deviceExtensions_.end());
+    VkPhysicalDeviceFeatures features = config_.requiredDeviceFeatures_;
 
     device_ = std::make_unique<Device>(*physicalDevice_, device_extensions, features, validation_layers);
 
