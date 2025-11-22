@@ -31,9 +31,9 @@ Image::Image(const VmaAllocator& allocator,
       tiling_(tiling),
       usage_(usage),
       samples_(samples),
-      vmaAllocator_(allocator.get_handle()),
-      device_(allocator.get_device()),
-      deviceRef_(allocator.get_device_ref()),
+      vmaAllocator_(allocator.GetHandle()),
+      device_(allocator.GetDevice()),
+      deviceRef_(allocator.GetDeviceRef()),
       usingVMA_(true) {
     VkImageCreateInfo image_info{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
     image_info.imageType = image_type;
@@ -52,7 +52,7 @@ Image::Image(const VmaAllocator& allocator,
     VmaAllocationCreateInfo alloc_info{};
     alloc_info.usage = memory_usage;
 
-    if (allocator.create_image(image_info, alloc_info, image_, allocation_, &allocationInfo_) != VK_SUCCESS) {
+    if (allocator.CreateImage(image_info, alloc_info, image_, allocation_, &allocationInfo_) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create image with VMA");
     }
 }
@@ -79,7 +79,7 @@ Image::Image(const Device& device,
       tiling_(tiling),
       usage_(usage),
       samples_(samples),
-      device_(device.get_handle()),
+      device_(device.GetHandle()),
       deviceRef_(&device),
       memoryProperties_(properties) {
     VkImageCreateInfo image_info{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
@@ -105,7 +105,7 @@ Image::Image(const Device& device,
 
     VkMemoryAllocateInfo alloc_info{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
     alloc_info.allocationSize = mem_requirements.size;
-    alloc_info.memoryTypeIndex = device.find_memory_type(mem_requirements.memoryTypeBits, properties);
+    alloc_info.memoryTypeIndex = device.FindMemoryType(mem_requirements.memoryTypeBits, properties);
 
     if (vkAllocateMemory(device_, &alloc_info, nullptr, &memory_) != VK_SUCCESS) {
         vkDestroyImage(device_, image_, nullptr);
@@ -133,7 +133,7 @@ Image::Image(VkImage image,
       ownsImage_(false) {}
 
 Image::~Image() {
-    cleanup();
+    Cleanup();
 }
 
 Image::Image(Image&& other) noexcept
@@ -165,7 +165,7 @@ Image::Image(Image&& other) noexcept
 
 Image& Image::operator=(Image&& other) noexcept {
     if (this != &other) {
-        cleanup();
+        Cleanup();
         image_ = other.image_;
         width_ = other.width_;
         height_ = other.height_;
@@ -195,7 +195,7 @@ Image& Image::operator=(Image&& other) noexcept {
     return *this;
 }
 
-VkImageView Image::create_image_view(VkImageViewType view_type,
+VkImageView Image::CreateImageView(VkImageViewType view_type,
                                    VkImageAspectFlags aspect_flags,
                                    uint32_t base_mip_level,
                                    uint32_t level_count,
@@ -218,7 +218,7 @@ VkImageView Image::create_image_view(VkImageViewType view_type,
     return image_view;
 }
 
-void Image::transition_layout(VkImageLayout old_layout,
+void Image::TransitionLayout(VkImageLayout old_layout,
                              VkImageLayout new_layout,
                              VkImageAspectFlags aspect_flags,
                              uint32_t base_mip_level,
@@ -279,25 +279,25 @@ void Image::transition_layout(VkImageLayout old_layout,
                          1, &barrier);
 }
 
-void Image::copy_from_buffer(VkBuffer /*buffer*/, const std::vector<VkBufferImageCopy>& /*regions*/) {
+void Image::CopyFromBuffer(VkBuffer /*buffer*/, const std::vector<VkBufferImageCopy>& /*regions*/) {
     throw std::runtime_error("Image::copy_from_buffer requires command buffer parameter in future overload; not implemented here");
 }
 
-void Image::copy_to_buffer(VkBuffer /*buffer*/, const std::vector<VkBufferImageCopy>& /*regions*/) {
+void Image::CopyToBuffer(VkBuffer /*buffer*/, const std::vector<VkBufferImageCopy>& /*regions*/) {
     throw std::runtime_error("Image::copyToBuffer requires explicit command buffer management and is not implemented in this RAII wrapper yet");
 }
 
-void Image::generate_mipmaps(VkFilter /*filter*/) {
+void Image::GenerateMipmaps(VkFilter /*filter*/) {
     throw std::runtime_error("Image::generateMipmaps requires explicit command buffer management and is not implemented in this RAII wrapper yet");
 }
 
-VkMemoryRequirements Image::get_memory_requirements() const {
+VkMemoryRequirements Image::GetMemoryRequirements() const {
     VkMemoryRequirements requirements{};
     vkGetImageMemoryRequirements(device_, image_, &requirements);
     return requirements;
 }
 
-void Image::cleanup() {
+void Image::Cleanup() {
     if (usingVMA_) {
         if (image_ != VK_NULL_HANDLE && vmaAllocator_ != VK_NULL_HANDLE) {
             vmaDestroyImage(vmaAllocator_, image_, allocation_);

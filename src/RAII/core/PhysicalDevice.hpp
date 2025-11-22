@@ -13,9 +13,9 @@ namespace VulkanEngine::RAII {
 class Instance; // Forward declaration
 
 struct SwapChainSupportDetails {
-    VkSurfaceCapabilitiesKHR capabilities_;
-    std::vector<VkSurfaceFormatKHR> formats_;
-    std::vector<VkPresentModeKHR> presentModes_;
+    VkSurfaceCapabilitiesKHR capabilities;
+    std::vector<VkSurfaceFormatKHR> formats;
+    std::vector<VkPresentModeKHR> presentModes;
 };
 
 class PhysicalDevice {
@@ -37,57 +37,57 @@ public:
     PhysicalDevice(const PhysicalDevice&) = default;
     PhysicalDevice& operator=(const PhysicalDevice&) = default;
 
-    [[nodiscard]] VkPhysicalDevice get_handle() const { return physicalDevice_; }
+    [[nodiscard]] VkPhysicalDevice GetHandle() const { return physicalDevice_; }
     
     // Implicit conversion to VkPhysicalDevice
     operator VkPhysicalDevice() const { return physicalDevice_; }
 
     // Check if the physical device is valid
-    [[nodiscard]] bool is_valid() const { return physicalDevice_ != VK_NULL_HANDLE; }
+    [[nodiscard]] bool IsValid() const { return physicalDevice_ != VK_NULL_HANDLE; }
 
     // Get device properties
-    [[nodiscard]] VkPhysicalDeviceProperties get_properties() const;
+    [[nodiscard]] VkPhysicalDeviceProperties GetProperties() const;
 
     // Get device features
-    [[nodiscard]] VkPhysicalDeviceFeatures get_features() const;
+    [[nodiscard]] VkPhysicalDeviceFeatures GetFeatures() const;
 
     // Get device memory properties
-    [[nodiscard]] VkPhysicalDeviceMemoryProperties get_memory_properties() const;
+    [[nodiscard]] VkPhysicalDeviceMemoryProperties GetMemoryProperties() const;
 
     // Get queue family properties
-    [[nodiscard]] std::vector<VkQueueFamilyProperties> get_queue_family_properties() const;
+    [[nodiscard]] std::vector<VkQueueFamilyProperties> GetQueueFamilyProperties() const;
 
     // Find queue families
-    QueueFamilyIndices find_queue_families(VkSurfaceKHR surface = VK_NULL_HANDLE) const;
+    QueueFamilyIndices FindQueueFamilies(VkSurfaceKHR surface = VK_NULL_HANDLE) const;
 
     // Check device extension support
-    [[nodiscard]] bool check_device_extension_support(const std::vector<const char*>& required_extensions) const;
+    [[nodiscard]] bool CheckDeviceExtensionSupport(const std::vector<const char*>& required_extensions) const;
 
     // Get available device extensions
-    [[nodiscard]] std::vector<VkExtensionProperties> get_available_extensions() const;
+    [[nodiscard]] std::vector<VkExtensionProperties> GetAvailableExtensions() const;
 
     // Query swap chain support
-    SwapChainSupportDetails query_swap_chain_support(VkSurfaceKHR surface) const;
+    SwapChainSupportDetails QuerySwapChainSupport(VkSurfaceKHR surface) const;
 
     // Check if device is suitable for our needs
-    bool is_device_suitable(VkSurfaceKHR surface = VK_NULL_HANDLE,
+    bool IsDeviceSuitable(VkSurfaceKHR surface = VK_NULL_HANDLE,
                          const std::vector<const char*>& required_extensions = {}) const;
 
     // Get all physical devices from instance
-    static std::vector<PhysicalDevice> enumerate_physical_devices(const Instance& instance);
+    static std::vector<PhysicalDevice> EnumeratePhysicalDevices(const Instance& instance);
 
     // Find memory type index
-    [[nodiscard]] uint32_t find_memory_type(uint32_t type_filter, VkMemoryPropertyFlags properties) const;
+    [[nodiscard]] uint32_t FindMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties) const;
 
     // Get device score for device selection
-    [[nodiscard]] int get_device_score() const;
+    [[nodiscard]] int GetDeviceScore() const;
 
 private:
     VkPhysicalDevice physicalDevice_{VK_NULL_HANDLE};
     VkInstance instance_{VK_NULL_HANDLE}; // Reference to instance
 
     // Helper methods
-    static PhysicalDevice select_best_device(const std::vector<PhysicalDevice>& devices, 
+    static PhysicalDevice SelectBestDevice(const std::vector<PhysicalDevice>& devices, 
                                          VkSurfaceKHR surface);
 };
 

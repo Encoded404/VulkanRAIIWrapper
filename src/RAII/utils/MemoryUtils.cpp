@@ -11,7 +11,7 @@
 namespace VulkanEngine::RAII::Utils {
 
 namespace {
-std::optional<uint32_t> find_memory_type_internal(VkPhysicalDevice physical_device,
+std::optional<uint32_t> FindMemoryTypeInternal(VkPhysicalDevice physical_device,
                                                uint32_t type_filter,
                                                VkMemoryPropertyFlags properties) {
     VkPhysicalDeviceMemoryProperties mem_properties{};
@@ -27,20 +27,20 @@ std::optional<uint32_t> find_memory_type_internal(VkPhysicalDevice physical_devi
     return std::nullopt;
 }
 
-std::optional<uint32_t> try_find_memory_type(VkPhysicalDevice physical_device,
+std::optional<uint32_t> TryFindMemoryType(VkPhysicalDevice physical_device,
                                           uint32_t type_filter,
                                           VkMemoryPropertyFlags required,
                                           VkMemoryPropertyFlags preferred) {
-    if (auto index = find_memory_type_internal(physical_device, type_filter, required | preferred)) {
+    if (auto index = FindMemoryTypeInternal(physical_device, type_filter, required | preferred)) {
         return index;
     }
     if (preferred != 0) {
-        if (auto index = find_memory_type_internal(physical_device, type_filter, required | preferred)) {
+        if (auto index = FindMemoryTypeInternal(physical_device, type_filter, required | preferred)) {
             return index;
         }
     }
     if (required != 0) {
-        if (auto index = find_memory_type_internal(physical_device, type_filter, required)) {
+        if (auto index = FindMemoryTypeInternal(physical_device, type_filter, required)) {
             return index;
         }
     }
@@ -49,16 +49,16 @@ std::optional<uint32_t> try_find_memory_type(VkPhysicalDevice physical_device,
 
 } // namespace
 
-uint32_t MemoryUtils::find_memory_type(VkPhysicalDevice physical_device,
+uint32_t MemoryUtils::FindMemoryType(VkPhysicalDevice physical_device,
                                      uint32_t type_filter,
                                      VkMemoryPropertyFlags properties) {
-    if (auto index = find_memory_type_internal(physical_device, type_filter, properties)) {
+    if (auto index = FindMemoryTypeInternal(physical_device, type_filter, properties)) {
         return *index;
     }
     throw std::runtime_error("Failed to find suitable memory type");
 }
 
-bool MemoryUtils::get_memory_budget(VkPhysicalDevice physical_device,
+bool MemoryUtils::GetMemoryBudget(VkPhysicalDevice physical_device,
                                   std::vector<VkDeviceSize>& heap_budgets,
                                   std::vector<VkDeviceSize>& heap_usages) {
     auto vk_get_physical_device_memory_properties2_ptr = vkGetPhysicalDeviceMemoryProperties2;
@@ -87,7 +87,7 @@ bool MemoryUtils::get_memory_budget(VkPhysicalDevice physical_device,
     return has_non_zero_budget || has_usage_data;
 }
 
-VkDeviceSize MemoryUtils::aligned_size(VkDeviceSize size, VkDeviceSize alignment) {
+VkDeviceSize MemoryUtils::AlignedSize(VkDeviceSize size, VkDeviceSize alignment) {
     if (alignment == 0) {
         return size;
     }
@@ -98,7 +98,7 @@ VkDeviceSize MemoryUtils::aligned_size(VkDeviceSize size, VkDeviceSize alignment
     return size + alignment - remainder;
 }
 
-VkMemoryPropertyFlags MemoryUtils::get_memory_type_properties(VkPhysicalDevice physical_device,
+VkMemoryPropertyFlags MemoryUtils::GetMemoryTypeProperties(VkPhysicalDevice physical_device,
                                                           uint32_t memory_type_index) {
     VkPhysicalDeviceMemoryProperties mem_properties{};
     vkGetPhysicalDeviceMemoryProperties(physical_device, &mem_properties);
@@ -108,22 +108,22 @@ VkMemoryPropertyFlags MemoryUtils::get_memory_type_properties(VkPhysicalDevice p
     return mem_properties.memoryTypes[memory_type_index].propertyFlags;
 }
 
-bool MemoryUtils::is_memory_type_host_visible(VkPhysicalDevice physical_device, uint32_t memory_type_index) {
-    VkMemoryPropertyFlags flags = get_memory_type_properties(physical_device, memory_type_index);
+bool MemoryUtils::IsMemoryTypeHostVisible(VkPhysicalDevice physical_device, uint32_t memory_type_index) {
+    VkMemoryPropertyFlags flags = GetMemoryTypeProperties(physical_device, memory_type_index);
     return (flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0;
 }
 
-bool MemoryUtils::is_memory_type_device_local(VkPhysicalDevice physical_device, uint32_t memory_type_index) {
-    VkMemoryPropertyFlags flags = get_memory_type_properties(physical_device, memory_type_index);
+bool MemoryUtils::IsMemoryTypeDeviceLocal(VkPhysicalDevice physical_device, uint32_t memory_type_index) {
+    VkMemoryPropertyFlags flags = GetMemoryTypeProperties(physical_device, memory_type_index);
     return (flags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) != 0;
 }
 
-bool MemoryUtils::is_memory_type_host_coherent(VkPhysicalDevice physical_device, uint32_t memory_type_index) {
-    VkMemoryPropertyFlags flags = get_memory_type_properties(physical_device, memory_type_index);
+bool MemoryUtils::IsMemoryTypeHostCoherent(VkPhysicalDevice physical_device, uint32_t memory_type_index) {
+    VkMemoryPropertyFlags flags = GetMemoryTypeProperties(physical_device, memory_type_index);
     return (flags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) != 0;
 }
 
-uint32_t MemoryUtils::get_optimal_buffer_memory_type(VkPhysicalDevice physical_device,
+uint32_t MemoryUtils::GetOptimalBufferMemoryType(VkPhysicalDevice physical_device,
                                                  VkDevice device,
                                                  VkBuffer buffer,
                                                  VkMemoryPropertyFlags preferred_properties,
@@ -131,7 +131,7 @@ uint32_t MemoryUtils::get_optimal_buffer_memory_type(VkPhysicalDevice physical_d
     VkMemoryRequirements requirements{};
     vkGetBufferMemoryRequirements(device, buffer, &requirements);
 
-    if (auto index = try_find_memory_type(physical_device,
+    if (auto index = TryFindMemoryType(physical_device,
                                        requirements.memoryTypeBits,
                                        required_properties,
                                        preferred_properties)) {
@@ -141,7 +141,7 @@ uint32_t MemoryUtils::get_optimal_buffer_memory_type(VkPhysicalDevice physical_d
     throw std::runtime_error("Failed to find suitable memory type for buffer");
 }
 
-uint32_t MemoryUtils::get_optimal_image_memory_type(VkPhysicalDevice physical_device,
+uint32_t MemoryUtils::GetOptimalImageMemoryType(VkPhysicalDevice physical_device,
                                                 VkDevice device,
                                                 VkImage image,
                                                 VkMemoryPropertyFlags preferred_properties,
@@ -149,7 +149,7 @@ uint32_t MemoryUtils::get_optimal_image_memory_type(VkPhysicalDevice physical_de
     VkMemoryRequirements requirements{};
     vkGetImageMemoryRequirements(device, image, &requirements);
 
-    if (auto index = try_find_memory_type(physical_device,
+    if (auto index = TryFindMemoryType(physical_device,
                                        requirements.memoryTypeBits,
                                        required_properties,
                                        preferred_properties)) {
@@ -159,11 +159,11 @@ uint32_t MemoryUtils::get_optimal_image_memory_type(VkPhysicalDevice physical_de
     throw std::runtime_error("Failed to find suitable memory type for image");
 }
 
-VkDeviceSize MemoryUtils::calculate_aligned_buffer_size(VkDeviceSize size, VkDeviceSize min_alignment) {
-    return aligned_size(size, min_alignment);
+VkDeviceSize MemoryUtils::CalculateAlignedBufferSize(VkDeviceSize size, VkDeviceSize min_alignment) {
+    return AlignedSize(size, min_alignment);
 }
 
-VkDeviceSize MemoryUtils::get_non_coherent_atom_size(VkPhysicalDevice physical_device) {
+VkDeviceSize MemoryUtils::GetNonCoherentAtomSize(VkPhysicalDevice physical_device) {
     VkPhysicalDeviceProperties properties{};
     vkGetPhysicalDeviceProperties(physical_device, &properties);
     return properties.limits.nonCoherentAtomSize;

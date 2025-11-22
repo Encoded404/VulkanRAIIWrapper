@@ -21,8 +21,8 @@ Device::Device(const PhysicalDevice& physical_device,
                const VkPhysicalDeviceFeatures& required_features,
                const std::vector<const char*>& validation_layers)
     : physicalDevice_(physical_device) {
-    queueFamilyIndices_ = physicalDevice_.find_queue_families();
-    create_logical_device(required_extensions, required_features, validation_layers);
+    queueFamilyIndices_ = physicalDevice_.FindQueueFamilies();
+    CreateLogicalDevice(required_extensions, required_features, validation_layers);
     // Create the transient/resettable command pool using graphics queue family
     if (!queueFamilyIndices_.graphicsFamily_.has_value()) {
         throw std::runtime_error("Graphics queue family not available for command pool creation");
@@ -72,49 +72,49 @@ Device& Device::operator=(Device&& other) noexcept {
     return *this;
 }
 
-void Device::wait_idle() const {
+void Device::WaitIdle() const {
     vkDeviceWaitIdle(device_);
 }
 
-VkQueue Device::get_queue(uint32_t queue_family_index, uint32_t queue_index) const {
+VkQueue Device::GetQueue(uint32_t queue_family_index, uint32_t queue_index) const {
     VkQueue queue = VK_NULL_HANDLE;
     vkGetDeviceQueue(device_, queue_family_index, queue_index, &queue);
     return queue;
 }
 
-VkQueue Device::get_graphics_queue() const {
+VkQueue Device::GetGraphicsQueue() const {
     if (!queueFamilyIndices_.graphicsFamily_.has_value()) {
         throw std::runtime_error("Graphics queue family not available");
     }
-    return get_queue(queueFamilyIndices_.graphicsFamily_.value());
+    return GetQueue(queueFamilyIndices_.graphicsFamily_.value());
 }
 
-VkQueue Device::get_present_queue() const {
+VkQueue Device::GetPresentQueue() const {
     if (!queueFamilyIndices_.presentFamily_.has_value()) {
         throw std::runtime_error("Present queue family not available");
     }
-    return get_queue(queueFamilyIndices_.presentFamily_.value());
+    return GetQueue(queueFamilyIndices_.presentFamily_.value());
 }
 
-VkQueue Device::get_compute_queue() const {
+VkQueue Device::GetComputeQueue() const {
     if (!queueFamilyIndices_.computeFamily_.has_value()) {
-        return get_graphics_queue();
+        return GetGraphicsQueue();
     }
-    return get_queue(queueFamilyIndices_.computeFamily_.value());
+    return GetQueue(queueFamilyIndices_.computeFamily_.value());
 }
 
-VkQueue Device::get_transfer_queue() const {
+VkQueue Device::GetTransferQueue() const {
     if (!queueFamilyIndices_.transferFamily_.has_value()) {
-        return get_graphics_queue();
+        return GetGraphicsQueue();
     }
-    return get_queue(queueFamilyIndices_.transferFamily_.value());
+    return GetQueue(queueFamilyIndices_.transferFamily_.value());
 }
 
-uint32_t Device::find_memory_type(uint32_t type_filter, VkMemoryPropertyFlags properties) const {
-    return physicalDevice_.find_memory_type(type_filter, properties);
+uint32_t Device::FindMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties) const {
+    return physicalDevice_.FindMemoryType(type_filter, properties);
 }
 
-VkResult Device::create_buffer(VkDeviceSize size,
+VkResult Device::CreateBuffer(VkDeviceSize size,
                               VkBufferUsageFlags usage,
                               VkMemoryPropertyFlags properties,
                               VkBuffer& buffer,
@@ -134,7 +134,7 @@ VkResult Device::create_buffer(VkDeviceSize size,
 
     VkMemoryAllocateInfo alloc_info{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
     alloc_info.allocationSize = mem_requirements.size;
-    alloc_info.memoryTypeIndex = find_memory_type(mem_requirements.memoryTypeBits, properties);
+    alloc_info.memoryTypeIndex = FindMemoryType(mem_requirements.memoryTypeBits, properties);
 
     result = vkAllocateMemory(device_, &alloc_info, nullptr, &buffer_memory);
     if (result != VK_SUCCESS) {
@@ -147,7 +147,7 @@ VkResult Device::create_buffer(VkDeviceSize size,
     return VK_SUCCESS;
 }
 
-VkResult Device::create_image(uint32_t width,
+VkResult Device::CreateImage(uint32_t width,
                              uint32_t height,
                              VkFormat format,
                              VkImageTiling tiling,
@@ -179,7 +179,7 @@ VkResult Device::create_image(uint32_t width,
 
     VkMemoryAllocateInfo alloc_info{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
     alloc_info.allocationSize = mem_requirements.size;
-    alloc_info.memoryTypeIndex = find_memory_type(mem_requirements.memoryTypeBits, properties);
+    alloc_info.memoryTypeIndex = FindMemoryType(mem_requirements.memoryTypeBits, properties);
 
     result = vkAllocateMemory(device_, &alloc_info, nullptr, &image_memory);
     if (result != VK_SUCCESS) {
@@ -192,9 +192,9 @@ VkResult Device::create_image(uint32_t width,
     return VK_SUCCESS;
 }
 
-VkCommandBuffer Device::begin_single_time_commands() const {
+VkCommandBuffer Device::BeginSingleTimeCommands() const {
     // Allocate from the internal transient/resettable pool via RAII helper
-    VkCommandBuffer command_buffer = singleUseCommandPool_->allocate_command_buffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+    VkCommandBuffer command_buffer = singleUseCommandPool_->AllocateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
     VkCommandBufferBeginInfo begin_info{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
     begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -203,7 +203,7 @@ VkCommandBuffer Device::begin_single_time_commands() const {
     return command_buffer;
 }
 
-void Device::end_single_time_commands(VkCommandBuffer command_buffer,
+void Device::EndSingleTimeCommands(VkCommandBuffer command_buffer,
                                    VkQueue submit_queue) const {
     vkEndCommandBuffer(command_buffer);
 
@@ -214,15 +214,15 @@ void Device::end_single_time_commands(VkCommandBuffer command_buffer,
     vkQueueSubmit(submit_queue, 1, &submit_info, VK_NULL_HANDLE);
     vkQueueWaitIdle(submit_queue);
 
-    singleUseCommandPool_->free_command_buffer(command_buffer);
+    singleUseCommandPool_->FreeCommandBuffer(command_buffer);
 }
 
-VkFormat Device::find_supported_format(const std::vector<VkFormat>& candidates,
+VkFormat Device::FindSupportedFormat(const std::vector<VkFormat>& candidates,
                                      VkImageTiling tiling,
                                      VkFormatFeatureFlags features) const {
     for (VkFormat format : candidates) {
         VkFormatProperties props;
-        vkGetPhysicalDeviceFormatProperties(physicalDevice_.get_handle(), format, &props);
+        vkGetPhysicalDeviceFormatProperties(physicalDevice_.GetHandle(), format, &props);
 
         if (tiling == VK_IMAGE_TILING_LINEAR &&
             (props.linearTilingFeatures & features) == features) {
@@ -237,21 +237,21 @@ VkFormat Device::find_supported_format(const std::vector<VkFormat>& candidates,
     throw std::runtime_error("Failed to find supported format");
 }
 
-VkFormat Device::find_depth_format() const {
-    return find_supported_format(
+VkFormat Device::FindDepthFormat() const {
+    return FindSupportedFormat(
         {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
         VK_IMAGE_TILING_OPTIMAL,
         VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 }
 
-bool Device::has_stencil_component(VkFormat format) const {
+bool Device::HasStencilComponent(VkFormat format) const {
     return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
 
-void Device::create_logical_device(const std::vector<const char*>& required_extensions,
+void Device::CreateLogicalDevice(const std::vector<const char*>& required_extensions,
                                  const VkPhysicalDeviceFeatures& required_features,
                                  const std::vector<const char*>& validation_layers) {
-    auto queue_create_infos = create_queue_create_infos(queueFamilyIndices_);
+    auto queue_create_infos = CreateQueueCreateInfos(queueFamilyIndices_);
     VkPhysicalDeviceFeatures enabled_features = required_features;
     enabled_features.samplerAnisotropy = VK_TRUE;
 
@@ -264,15 +264,15 @@ void Device::create_logical_device(const std::vector<const char*>& required_exte
     create_info.enabledLayerCount = static_cast<uint32_t>(validation_layers.size());
     create_info.ppEnabledLayerNames = validation_layers.empty() ? nullptr : validation_layers.data();
 
-    if (vkCreateDevice(physicalDevice_.get_handle(), &create_info, nullptr, &device_) != VK_SUCCESS) {
+    if (vkCreateDevice(physicalDevice_.GetHandle(), &create_info, nullptr, &device_) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create logical device");
     }
 
     volkLoadDevice(device_);
 }
 
-std::vector<VkDeviceQueueCreateInfo> Device::create_queue_create_infos(const QueueFamilyIndices& indices) const {
-    std::set<uint32_t> unique_families = indices.get_unique_indices();
+std::vector<VkDeviceQueueCreateInfo> Device::CreateQueueCreateInfos(const QueueFamilyIndices& indices) const {
+    std::set<uint32_t> unique_families = indices.GetUniqueIndices();
     float queue_priority = 1.0f;
     std::vector<VkDeviceQueueCreateInfo> infos;
     infos.reserve(unique_families.size());

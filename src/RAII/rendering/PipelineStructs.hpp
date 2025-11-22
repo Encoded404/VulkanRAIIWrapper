@@ -9,70 +9,70 @@
 namespace VulkanEngine::RAII {
 
 struct PipelineShaderStage {
-    VkShaderStageFlagBits stage_;
-    VkShaderModule module_;
-    std::string entryPoint_ = "main";
-    const VkSpecializationInfo* specializationInfo_ = nullptr;
+    VkShaderStageFlagBits stage;
+    VkShaderModule module;
+    std::string entryPoint = "main";
+    const VkSpecializationInfo* specializationInfo = nullptr;
 };
 
 struct PipelineVertexInput {
-    std::vector<VkVertexInputBindingDescription> bindingDescriptions_;
-    std::vector<VkVertexInputAttributeDescription> attributeDescriptions_;
+    std::vector<VkVertexInputBindingDescription> bindingDescriptions;
+    std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 };
 
 struct PipelineInputAssembly {
-    VkPrimitiveTopology topology_ = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    VkBool32 primitiveRestartEnable_ = VK_FALSE;
+    VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    VkBool32 primitiveRestartEnable = VK_FALSE;
 };
 
 struct PipelineViewport {
-    std::vector<VkViewport> viewports_;
-    std::vector<VkRect2D> scissors_;
+    std::vector<VkViewport> viewports;
+    std::vector<VkRect2D> scissors;
 };
 
 struct PipelineRasterization {
-    VkBool32 depthClampEnable_ = VK_FALSE;
-    VkBool32 rasterizerDiscardEnable_ = VK_FALSE;
-    VkPolygonMode polygonMode_ = VK_POLYGON_MODE_FILL;
-    VkCullModeFlags cullMode_ = VK_CULL_MODE_BACK_BIT;
-    VkFrontFace frontFace_ = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-    VkBool32 depthBiasEnable_ = VK_FALSE;
-    float depthBiasConstantFactor_ = 0.0f;
-    float depthBiasClamp_ = 0.0f;
-    float depthBiasSlopeFactor_ = 0.0f;
-    float lineWidth_ = 1.0f;
+    VkBool32 depthClampEnable = VK_FALSE;
+    VkBool32 rasterizerDiscardEnable = VK_FALSE;
+    VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL;
+    VkCullModeFlags cullMode = VK_CULL_MODE_BACK_BIT;
+    VkFrontFace frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+    VkBool32 depthBiasEnable = VK_FALSE;
+    float depthBiasConstantFactor = 0.0f;
+    float depthBiasClamp = 0.0f;
+    float depthBiasSlopeFactor = 0.0f;
+    float lineWidth = 1.0f;
 };
 
 struct PipelineMultisample {
-    VkSampleCountFlagBits rasterizationSamples_ = VK_SAMPLE_COUNT_1_BIT;
-    VkBool32 sampleShadingEnable_ = VK_FALSE;
-    float minSampleShading_ = 1.0f;
-    const VkSampleMask* sampleMask_ = nullptr;
-    VkBool32 alphaToCoverageEnable_ = VK_FALSE;
-    VkBool32 alphaToOneEnable_ = VK_FALSE;
+    VkSampleCountFlagBits rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+    VkBool32 sampleShadingEnable = VK_FALSE;
+    float minSampleShading = 1.0f;
+    const VkSampleMask* sampleMask = nullptr;
+    VkBool32 alphaToCoverageEnable = VK_FALSE;
+    VkBool32 alphaToOneEnable = VK_FALSE;
 };
 
 struct PipelineDepthStencil {
-    VkBool32 depthTestEnable_ = VK_TRUE;
-    VkBool32 depthWriteEnable_ = VK_TRUE;
-    VkCompareOp depthCompareOp_ = VK_COMPARE_OP_LESS;
-    VkBool32 depthBoundsTestEnable_ = VK_FALSE;
-    VkBool32 stencilTestEnable_ = VK_FALSE;
-    VkStencilOpState front_{};
-    VkStencilOpState back_{};
-    float minDepthBounds_ = 0.0f;
-    float maxDepthBounds_ = 1.0f;
+    VkBool32 depthTestEnable = VK_TRUE;
+    VkBool32 depthWriteEnable = VK_TRUE;
+    VkCompareOp depthCompareOp = VK_COMPARE_OP_LESS;
+    VkBool32 depthBoundsTestEnable = VK_FALSE;
+    VkBool32 stencilTestEnable = VK_FALSE;
+    VkStencilOpState front{};
+    VkStencilOpState back{};
+    float minDepthBounds = 0.0f;
+    float maxDepthBounds = 1.0f;
 };
 
 struct PipelineColorBlend {
-    VkBool32 logicOpEnable_ = VK_FALSE;
-    VkLogicOp logicOp_ = VK_LOGIC_OP_COPY;
-    std::vector<VkPipelineColorBlendAttachmentState> attachments_;
-    float blendConstants_[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    VkBool32 logicOpEnable = VK_FALSE;
+    VkLogicOp logicOp = VK_LOGIC_OP_COPY;
+    std::vector<VkPipelineColorBlendAttachmentState> attachments;
+    float blendConstants[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 };
 
 struct PipelineTessellation {
-    uint32_t patchControlPoints_ = 3;
+    uint32_t patchControlPoints = 3;
 };
 
 struct PipelineGeometry {
@@ -83,31 +83,31 @@ struct PipelineGeometry {
 // Helper functions for creating common pipeline states
 namespace PipelineDefaults {
 
-PipelineVertexInput create_empty_vertex_input();
-PipelineInputAssembly create_triangle_list_input_assembly();
-PipelineInputAssembly create_triangle_strip_input_assembly();
-PipelineInputAssembly create_point_list_input_assembly();
-PipelineInputAssembly create_line_list_input_assembly();
+PipelineVertexInput CreateEmptyVertexInput();
+PipelineInputAssembly CreateTriangleListInputAssembly();
+PipelineInputAssembly CreateTriangleStripInputAssembly();
+PipelineInputAssembly CreatePointListInputAssembly();
+PipelineInputAssembly CreateLineListInputAssembly();
 
-PipelineRasterization create_default_rasterization();
-PipelineRasterization create_wireframe_rasterization();
-PipelineRasterization create_no_cull_rasterization();
+PipelineRasterization CreateDefaultRasterization();
+PipelineRasterization CreateWireframeRasterization();
+PipelineRasterization CreateNoCullRasterization();
 
-PipelineMultisample create_no_multisample();
-PipelineMultisample create_msa_a4x();
-PipelineMultisample create_msa_a8x();
+PipelineMultisample CreateNoMultisample();
+PipelineMultisample CreateMsaA4x();
+PipelineMultisample CreateMsaA8x();
 
-PipelineDepthStencil create_default_depth_stencil();
-PipelineDepthStencil create_no_depth_test();
-PipelineDepthStencil create_depth_only_test();
+PipelineDepthStencil CreateDefaultDepthStencil();
+PipelineDepthStencil CreateNoDepthTest();
+PipelineDepthStencil CreateDepthOnlyTest();
 
-PipelineColorBlend create_opaque_color_blend(uint32_t attachment_count = 1);
-PipelineColorBlend create_alpha_blend_color_blend(uint32_t attachment_count = 1);
-PipelineColorBlend create_additive_blend_color_blend(uint32_t attachment_count = 1);
+PipelineColorBlend CreateOpaqueColorBlend(uint32_t attachment_count = 1);
+PipelineColorBlend CreateAlphaBlendColorBlend(uint32_t attachment_count = 1);
+PipelineColorBlend CreateAdditiveBlendColorBlend(uint32_t attachment_count = 1);
 
-VkPipelineColorBlendAttachmentState create_opaque_color_blend_attachment();
-VkPipelineColorBlendAttachmentState create_alpha_blend_attachment();
-VkPipelineColorBlendAttachmentState create_additive_blend_attachment();
+VkPipelineColorBlendAttachmentState CreateOpaqueColorBlendAttachment();
+VkPipelineColorBlendAttachmentState CreateAlphaBlendAttachment();
+VkPipelineColorBlendAttachmentState CreateAdditiveBlendAttachment();
 
 } // namespace PipelineDefaults
 

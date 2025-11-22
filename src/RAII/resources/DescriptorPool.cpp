@@ -15,7 +15,7 @@ DescriptorPool::DescriptorPool(const Device& device,
                                uint32_t max_sets,
                                const std::vector<VkDescriptorPoolSize>& pool_sizes,
                                VkDescriptorPoolCreateFlags flags)
-    : device_(device.get_handle()),
+    : device_(device.GetHandle()),
       maxSets_(max_sets),
       poolSizes_(pool_sizes),
       allowsIndividualFree_((flags & VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT) != 0) {
@@ -25,7 +25,7 @@ DescriptorPool::DescriptorPool(const Device& device,
     if (maxSets_ == 0) {
         throw std::invalid_argument("DescriptorPool maxSets must be greater than zero");
     }
-    create_descriptor_pool(flags);
+    CreateDescriptorPool(flags);
 }
 
 DescriptorPool::DescriptorPool(const Device& device,
@@ -39,7 +39,7 @@ DescriptorPool::DescriptorPool(const Device& device,
                      flags) {}
 
 DescriptorPool::~DescriptorPool() {
-    cleanup();
+    Cleanup();
 }
 
 DescriptorPool::DescriptorPool(DescriptorPool&& other) noexcept
@@ -56,7 +56,7 @@ DescriptorPool::DescriptorPool(DescriptorPool&& other) noexcept
 
 DescriptorPool& DescriptorPool::operator=(DescriptorPool&& other) noexcept {
     if (this != &other) {
-        cleanup();
+        Cleanup();
         descriptorPool_ = other.descriptorPool_;
         device_ = other.device_;
         maxSets_ = other.maxSets_;
@@ -71,7 +71,7 @@ DescriptorPool& DescriptorPool::operator=(DescriptorPool&& other) noexcept {
     return *this;
 }
 
-std::vector<VkDescriptorSet> DescriptorPool::allocate_descriptor_sets(const std::vector<VkDescriptorSetLayout>& layouts) {
+std::vector<VkDescriptorSet> DescriptorPool::AllocateDescriptorSets(const std::vector<VkDescriptorSetLayout>& layouts) {
     if (layouts.empty()) {
         return {};
     }
@@ -89,12 +89,12 @@ std::vector<VkDescriptorSet> DescriptorPool::allocate_descriptor_sets(const std:
     return descriptor_sets;
 }
 
-VkDescriptorSet DescriptorPool::allocate_descriptor_set(VkDescriptorSetLayout layout) {
-    auto sets = allocate_descriptor_sets({layout});
+VkDescriptorSet DescriptorPool::AllocateDescriptorSet(VkDescriptorSetLayout layout) {
+    auto sets = AllocateDescriptorSets({layout});
     return sets.front();
 }
 
-void DescriptorPool::free_descriptor_sets(const std::vector<VkDescriptorSet>& descriptor_sets) {
+void DescriptorPool::FreeDescriptorSets(const std::vector<VkDescriptorSet>& descriptor_sets) {
     if (!allowsIndividualFree_ || descriptor_sets.empty()) {
         return;
     }
@@ -104,18 +104,18 @@ void DescriptorPool::free_descriptor_sets(const std::vector<VkDescriptorSet>& de
                          descriptor_sets.data());
 }
 
-void DescriptorPool::free_descriptor_set(VkDescriptorSet descriptor_set) {
+void DescriptorPool::FreeDescriptorSet(VkDescriptorSet descriptor_set) {
     if (descriptor_set == VK_NULL_HANDLE) {
         return;
     }
-    free_descriptor_sets({descriptor_set});
+    FreeDescriptorSets({descriptor_set});
 }
 
-void DescriptorPool::reset(VkDescriptorPoolResetFlags flags) {
+void DescriptorPool::Reset(VkDescriptorPoolResetFlags flags) {
     vkResetDescriptorPool(device_, descriptorPool_, flags);
 }
 
-void DescriptorPool::update_descriptor_sets(const std::vector<VkWriteDescriptorSet>& writes,
+void DescriptorPool::UpdateDescriptorSets(const std::vector<VkWriteDescriptorSet>& writes,
                                             const std::vector<VkCopyDescriptorSet>& copies) const {
     if (writes.empty() && copies.empty()) {
         return;
@@ -127,7 +127,7 @@ void DescriptorPool::update_descriptor_sets(const std::vector<VkWriteDescriptorS
                            copies.empty() ? nullptr : copies.data());
 }
 
-DescriptorPool DescriptorPool::create_for_uniform_buffers(const Device& device,
+DescriptorPool DescriptorPool::CreateForUniformBuffers(const Device& device,
                                                         uint32_t max_sets,
                                                         uint32_t uniform_buffer_count) {
     VkDescriptorPoolSize pool_size{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -135,7 +135,7 @@ DescriptorPool DescriptorPool::create_for_uniform_buffers(const Device& device,
     return DescriptorPool(device, max_sets, {pool_size});
 }
 
-DescriptorPool DescriptorPool::create_for_textures(const Device& device,
+DescriptorPool DescriptorPool::CreateForTextures(const Device& device,
                                                  uint32_t max_sets,
                                                  uint32_t texture_count) {
     VkDescriptorPoolSize pool_size{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
@@ -143,7 +143,7 @@ DescriptorPool DescriptorPool::create_for_textures(const Device& device,
     return DescriptorPool(device, max_sets, {pool_size});
 }
 
-DescriptorPool DescriptorPool::create_for_mixed(const Device& device,
+DescriptorPool DescriptorPool::CreateForMixed(const Device& device,
                                               uint32_t max_sets,
                                               uint32_t uniform_buffer_count,
                                               uint32_t sampler_count,
@@ -164,7 +164,7 @@ DescriptorPool DescriptorPool::create_for_mixed(const Device& device,
     return DescriptorPool(device, max_sets, pool_sizes);
 }
 
-void DescriptorPool::create_descriptor_pool(VkDescriptorPoolCreateFlags flags) {
+void DescriptorPool::CreateDescriptorPool(VkDescriptorPoolCreateFlags flags) {
     VkDescriptorPoolCreateInfo pool_info{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
     pool_info.flags = flags;
     pool_info.maxSets = maxSets_;
@@ -176,7 +176,7 @@ void DescriptorPool::create_descriptor_pool(VkDescriptorPoolCreateFlags flags) {
     }
 }
 
-void DescriptorPool::cleanup() {
+void DescriptorPool::Cleanup() {
     if (descriptorPool_ != VK_NULL_HANDLE) {
         vkDestroyDescriptorPool(device_, descriptorPool_, nullptr);
         descriptorPool_ = VK_NULL_HANDLE;

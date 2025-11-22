@@ -13,17 +13,17 @@ namespace VulkanEngine::RAII {
 PipelineLayout::PipelineLayout(const Device& device,
                                const std::vector<VkDescriptorSetLayout>& set_layouts,
                                const std::vector<VkPushConstantRange>& push_constant_ranges)
-    : device_(device.get_handle()),
+    : device_(device.GetHandle()),
       setLayouts_(set_layouts),
       pushConstantRanges_(push_constant_ranges) {
-    if (device.get_handle() == VK_NULL_HANDLE) {
+    if (device.GetHandle() == VK_NULL_HANDLE) {
         throw std::invalid_argument("PipelineLayout requires a valid device");
     }
-    create_pipeline_layout();
+    CreatePipelineLayout();
 }
 
 PipelineLayout::~PipelineLayout() {
-    cleanup();
+    Cleanup();
 }
 
 PipelineLayout::PipelineLayout(PipelineLayout&& other) noexcept
@@ -37,7 +37,7 @@ PipelineLayout::PipelineLayout(PipelineLayout&& other) noexcept
 
 PipelineLayout& PipelineLayout::operator=(PipelineLayout&& other) noexcept {
     if (this != &other) {
-        cleanup();
+        Cleanup();
         pipelineLayout_ = other.pipelineLayout_;
         device_ = other.device_;
         setLayouts_ = std::move(other.setLayouts_);
@@ -49,20 +49,20 @@ PipelineLayout& PipelineLayout::operator=(PipelineLayout&& other) noexcept {
     return *this;
 }
 
-PipelineLayout PipelineLayout::create_single_set(const Device& device, VkDescriptorSetLayout set_layout) {
+PipelineLayout PipelineLayout::CreateSingleSet(const Device& device, VkDescriptorSetLayout set_layout) {
     return PipelineLayout(device, {set_layout}, {});
 }
 
-PipelineLayout PipelineLayout::create_push_constants_only(const Device& device,
+PipelineLayout PipelineLayout::CreatePushConstantsOnly(const Device& device,
                                                         const std::vector<VkPushConstantRange>& push_constant_ranges) {
     return PipelineLayout(device, {}, push_constant_ranges);
 }
 
-PipelineLayout PipelineLayout::create_empty(const Device& device) {
+PipelineLayout PipelineLayout::CreateEmpty(const Device& device) {
     return PipelineLayout(device, {}, {});
 }
 
-void PipelineLayout::create_pipeline_layout() {
+void PipelineLayout::CreatePipelineLayout() {
     VkPipelineLayoutCreateInfo layout_info{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
     layout_info.setLayoutCount = static_cast<uint32_t>(setLayouts_.size());
     layout_info.pSetLayouts = setLayouts_.empty() ? nullptr : setLayouts_.data();
@@ -74,7 +74,7 @@ void PipelineLayout::create_pipeline_layout() {
     }
 }
 
-void PipelineLayout::cleanup() {
+void PipelineLayout::Cleanup() {
     if (pipelineLayout_ != VK_NULL_HANDLE) {
         vkDestroyPipelineLayout(device_, pipelineLayout_, nullptr);
         pipelineLayout_ = VK_NULL_HANDLE;

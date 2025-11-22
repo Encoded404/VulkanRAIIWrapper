@@ -9,8 +9,8 @@ namespace VulkanEngine::RAII {
 DebugMessenger::DebugMessenger(const Instance& instance,
                                VkDebugUtilsMessageSeverityFlagsEXT message_severity,
                                VkDebugUtilsMessageTypeFlagsEXT message_type)
-    : instance_(instance.get_handle()) {
-    create_debug_messenger(instance, message_severity, message_type);
+    : instance_(instance.GetHandle()) {
+    CreateDebugMessenger(instance, message_severity, message_type);
 }
 
 DebugMessenger::~DebugMessenger() {
@@ -39,7 +39,7 @@ DebugMessenger& DebugMessenger::operator=(DebugMessenger&& other) noexcept {
     return *this;
 }
 
-VKAPI_ATTR VkBool32 VKAPI_CALL DebugMessenger::debug_callback(
+VKAPI_ATTR VkBool32 VKAPI_CALL DebugMessenger::DebugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
     VkDebugUtilsMessageTypeFlagsEXT message_type,
     const VkDebugUtilsMessengerCallbackDataEXT* p_callback_data,
@@ -50,22 +50,22 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugMessenger::debug_callback(
     return VK_FALSE;
 }
 
-VkDebugUtilsMessengerCreateInfoEXT DebugMessenger::get_create_info(
+VkDebugUtilsMessengerCreateInfoEXT DebugMessenger::GetCreateInfo(
     VkDebugUtilsMessageSeverityFlagsEXT message_severity,
     VkDebugUtilsMessageTypeFlagsEXT message_type) {
     VkDebugUtilsMessengerCreateInfoEXT create_info{VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT};
     create_info.messageSeverity = message_severity;
     create_info.messageType = message_type;
-    create_info.pfnUserCallback = debug_callback;
+    create_info.pfnUserCallback = DebugCallback;
     create_info.pUserData = nullptr;
     return create_info;
 }
 
-void DebugMessenger::create_debug_messenger(const Instance& instance,
+void DebugMessenger::CreateDebugMessenger(const Instance& instance,
                                           VkDebugUtilsMessageSeverityFlagsEXT message_severity,
                                           VkDebugUtilsMessageTypeFlagsEXT message_type) {
-    auto create_info = get_create_info(message_severity, message_type);
-    VkResult result = vkCreateDebugUtilsMessengerEXT(instance.get_handle(), &create_info, nullptr, &debugMessenger_);
+    auto create_info = GetCreateInfo(message_severity, message_type);
+    VkResult result = vkCreateDebugUtilsMessengerEXT(instance.GetHandle(), &create_info, nullptr, &debugMessenger_);
     if (result != VK_SUCCESS) {
         throw std::runtime_error("Failed to create debug messenger");
     }

@@ -32,58 +32,58 @@ public:
     Queue(const Queue&) = default;
     Queue& operator=(const Queue&) = default;
 
-    [[nodiscard]] VkQueue get_handle() const { return queue_; }
+    [[nodiscard]] VkQueue GetHandle() const { return queue_; }
     
     // Implicit conversion to VkQueue
     operator VkQueue() const { return queue_; }
 
     // Check if the queue is valid
-    [[nodiscard]] bool is_valid() const { return queue_ != VK_NULL_HANDLE; }
+    [[nodiscard]] bool IsValid() const { return queue_ != VK_NULL_HANDLE; }
 
     // Get queue family index
-    [[nodiscard]] uint32_t get_family_index() const { return familyIndex_; }
+    [[nodiscard]] uint32_t GetFamilyIndex() const { return familyIndex_; }
 
     // Get queue type
-    [[nodiscard]] QueueType get_type() const { return type_; }
+    [[nodiscard]] QueueType GetType() const { return type_; }
 
     // Submit command buffers to the queue
-    VkResult submit(const std::vector<VkCommandBuffer>& command_buffers,
+    VkResult Submit(const std::vector<VkCommandBuffer>& command_buffers,
                    const std::vector<VkSemaphore>& wait_semaphores = {},
                    const std::vector<VkPipelineStageFlags>& wait_stages = {},
                    const std::vector<VkSemaphore>& signal_semaphores = {},
                    VkFence fence = VK_NULL_HANDLE) const;
 
     // Submit a single command buffer
-    VkResult submit(VkCommandBuffer command_buffer,
+    VkResult Submit(VkCommandBuffer command_buffer,
                    VkSemaphore wait_semaphore = VK_NULL_HANDLE,
                    VkPipelineStageFlags wait_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
                    VkSemaphore signal_semaphore = VK_NULL_HANDLE,
                    VkFence fence = VK_NULL_HANDLE) const;
 
     // Present swap chain images (only valid for present queues)
-    [[nodiscard]] VkResult present(const std::vector<VkSwapchainKHR>& swap_chains,
+    [[nodiscard]] VkResult Present(const std::vector<VkSwapchainKHR>& swap_chains,
                     const std::vector<uint32_t>& image_indices,
                     const std::vector<VkSemaphore>& wait_semaphores = {}) const;
 
     // Present single swap chain image
-    VkResult present(VkSwapchainKHR swap_chain,
+    VkResult Present(VkSwapchainKHR swap_chain,
                     uint32_t image_index,
                     VkSemaphore wait_semaphore = VK_NULL_HANDLE) const;
 
     // Wait for queue to be idle
-    [[nodiscard]] VkResult wait_idle() const;
+    [[nodiscard]] VkResult WaitIdle() const;
 
     // Bind sparse buffer memory
-    VkResult bind_sparse(const std::vector<VkBindSparseInfo>& bind_info,
+    VkResult BindSparse(const std::vector<VkBindSparseInfo>& bind_info,
                        VkFence fence = VK_NULL_HANDLE) const;
 
     // Get queue capabilities based on family properties
-    static VkQueueFlags get_queue_capabilities(const Device& device, uint32_t queue_family_index);
+    static VkQueueFlags GetQueueCapabilities(const Device& device, uint32_t queue_family_index);
 
     // Check if queue supports specific operations
-    [[nodiscard]] bool supports_graphics() const;
-    [[nodiscard]] bool supports_compute() const;
-    [[nodiscard]] bool supports_transfer() const;
+    [[nodiscard]] bool SupportsGraphics() const;
+    [[nodiscard]] bool SupportsCompute() const;
+    [[nodiscard]] bool SupportsTransfer() const;
 
 private:
     VkQueue queue_{VK_NULL_HANDLE};
@@ -92,12 +92,12 @@ private:
     VkQueueFlags capabilities_{0}; // Cached queue capabilities
 
     // Helper methods
-    [[nodiscard]] VkSubmitInfo create_submit_info(const std::vector<VkCommandBuffer>& command_buffers,
+    [[nodiscard]] VkSubmitInfo CreateSubmitInfo(const std::vector<VkCommandBuffer>& command_buffers,
                                  const std::vector<VkSemaphore>& wait_semaphores,
                                  const std::vector<VkPipelineStageFlags>& wait_stages,
                                  const std::vector<VkSemaphore>& signal_semaphores) const;
 
-    [[nodiscard]] VkPresentInfoKHR create_present_info(const std::vector<VkSwapchainKHR>& swap_chains,
+    [[nodiscard]] VkPresentInfoKHR CreatePresentInfo(const std::vector<VkSwapchainKHR>& swap_chains,
                                       const std::vector<uint32_t>& image_indices,
                                       const std::vector<VkSemaphore>& wait_semaphores) const;
 };
@@ -108,16 +108,16 @@ public:
     explicit QueueManager(const Device& device);
 
     // Get queues by type
-    [[nodiscard]] const Queue& get_graphics_queue() const { return graphicsQueue_; }
-    [[nodiscard]] const Queue& get_present_queue() const { return presentQueue_; }
-    [[nodiscard]] const Queue& get_compute_queue() const { return computeQueue_; }
-    [[nodiscard]] const Queue& get_transfer_queue() const { return transferQueue_; }
+    [[nodiscard]] const Queue& GetGraphicsQueue() const { return graphicsQueue_; }
+    [[nodiscard]] const Queue& GetPresentQueue() const { return presentQueue_; }
+    [[nodiscard]] const Queue& GetComputeQueue() const { return computeQueue_; }
+    [[nodiscard]] const Queue& GetTransferQueue() const { return transferQueue_; }
 
     // Check if specific queue types are available
-    [[nodiscard]] bool has_graphics_queue() const { return graphicsQueue_.is_valid(); }
-    [[nodiscard]] bool has_present_queue() const { return presentQueue_.is_valid(); }
-    [[nodiscard]] bool has_compute_queue() const { return computeQueue_.is_valid(); }
-    [[nodiscard]] bool has_transfer_queue() const { return transferQueue_.is_valid(); }
+    [[nodiscard]] bool HasGraphicsQueue() const { return graphicsQueue_.IsValid(); }
+    [[nodiscard]] bool HasPresentQueue() const { return presentQueue_.IsValid(); }
+    [[nodiscard]] bool HasComputeQueue() const { return computeQueue_.IsValid(); }
+    [[nodiscard]] bool HasTransferQueue() const { return transferQueue_.IsValid(); }
 
 private:
     Queue graphicsQueue_;
@@ -125,7 +125,7 @@ private:
     Queue computeQueue_;
     Queue transferQueue_;
 
-    void initialize_queues(const Device& device);
+    void InitializeQueues(const Device& device);
 };
 
 } // namespace VulkanEngine::RAII

@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <ranges>
 #include <volk.h>
 
 
@@ -20,7 +21,7 @@ Instance::Instance(const std::string& application_name,
                    uint32_t application_version,
                    const std::vector<const char*>& required_extensions,
                    const std::vector<const char*>& validation_layers) {
-    if (volkInitialize()) {
+    if (volkInitialize() != VK_SUCCESS) {
         throw std::runtime_error("Failed to initialize Volk");
     }
 
@@ -35,7 +36,7 @@ Instance::Instance(const std::string& application_name,
         }
     }
 
-    create_instance(application_name,
+    CreateInstance(application_name,
                    application_version,
                    DEFAULT_ENGINE_NAME,
                    DEFAULT_ENGINE_VERSION,
@@ -68,7 +69,7 @@ Instance& Instance::operator=(Instance&& other) noexcept {
     return *this;
 }
 
-void Instance::create_instance(const std::string& application_name,
+void Instance::CreateInstance(const std::string& application_name,
                               uint32_t application_version,
                               const std::string& engine_name,
                               uint32_t engine_version,
@@ -82,7 +83,7 @@ void Instance::create_instance(const std::string& application_name,
     app_info.engineVersion = engine_version;
     app_info.apiVersion = api_version;
 
-    if (!validation_layers.empty() && !check_validation_layer_support(validation_layers)) {
+    if (!validation_layers.empty() && !CheckValidationLayerSupport(validation_layers)) {
         throw std::runtime_error("Requested validation layers are not available");
     }
 
@@ -99,7 +100,7 @@ void Instance::create_instance(const std::string& application_name,
     }
 }
 
-bool Instance::check_validation_layer_support(const std::vector<const char*>& validation_layers) {
+bool Instance::CheckValidationLayerSupport(const std::vector<const char*>& validation_layers) {
     uint32_t layer_count = 0;
     vkEnumerateInstanceLayerProperties(&layer_count, nullptr);
 
@@ -121,7 +122,7 @@ bool Instance::check_validation_layer_support(const std::vector<const char*>& va
     return true;
 }
 
-std::vector<VkExtensionProperties> Instance::get_available_extensions() {
+std::vector<VkExtensionProperties> Instance::GetAvailableExtensions() {
     uint32_t extension_count = 0;
     vkEnumerateInstanceExtensionProperties(nullptr, &extension_count, nullptr);
 
@@ -130,7 +131,7 @@ std::vector<VkExtensionProperties> Instance::get_available_extensions() {
     return extensions;
 }
 
-std::vector<VkLayerProperties> Instance::get_available_layers() {
+std::vector<VkLayerProperties> Instance::GetAvailableLayers() {
     uint32_t layer_count = 0;
     vkEnumerateInstanceLayerProperties(&layer_count, nullptr);
 
@@ -139,15 +140,15 @@ std::vector<VkLayerProperties> Instance::get_available_layers() {
     return layers;
 }
 
-bool Instance::is_extension_supported(const std::string& extension) {
-    std::vector<VkExtensionProperties> extensions = get_available_extensions();
+bool Instance::IsExtensionSupported(const std::string& extension) {
+    std::vector<VkExtensionProperties> extensions = GetAvailableExtensions();
     return std::ranges::any_of(extensions.begin(), extensions.end(), [&](const VkExtensionProperties& props) {
         return extension == props.extensionName;
     });
 }
 
-bool Instance::is_layer_supported(const std::string& layer) {
-    std::vector<VkLayerProperties> layers = get_available_layers();
+bool Instance::IsLayerSupported(const std::string& layer) {
+    std::vector<VkLayerProperties> layers = GetAvailableLayers();
     return std::ranges::any_of(layers.begin(), layers.end(), [&](const VkLayerProperties& props) {
         return layer == props.layerName;
     });

@@ -25,7 +25,7 @@ namespace {
 
 // SDL3 surfaces displays via opaque IDs; translate legacy index lookups so
 // existing code can keep addressing monitors by index.
-SDL_DisplayID get_display_id_from_index(int display_index) {
+SDL_DisplayID GetDisplayIdFromIndex(int display_index) {
     int count = 0;
     SDL_DisplayID* displays = SDL_GetDisplays(&count);
     if (!displays || display_index < 0 || display_index >= count) {
@@ -45,7 +45,7 @@ SDL_DisplayID get_display_id_from_index(int display_index) {
 bool SDLUtils::s_initialized = false;
 bool SDLUtils::s_vulkan_supported = false;
 
-bool SDLUtils::initialize_sdl_for_vulkan() {
+bool SDLUtils::InitializeSdlForVulkan() {
     if (s_initialized) {
         return s_vulkan_supported;
     }
@@ -66,7 +66,7 @@ bool SDLUtils::initialize_sdl_for_vulkan() {
     return true;
 }
 
-void SDLUtils::quit_sdl() {
+void SDLUtils::QuitSdl() {
     if (!s_initialized) {
         return;
     }
@@ -77,8 +77,8 @@ void SDLUtils::quit_sdl() {
     s_vulkan_supported = false;
 }
 
-std::vector<const char*> SDLUtils::get_required_instance_extensions() {
-    if (!is_vulkan_supported()) {
+std::vector<const char*> SDLUtils::GetRequiredInstanceExtensions() {
+    if (!IsVulkanSupported()) {
         throw std::runtime_error("SDL Vulkan support has not been initialised");
     }
 
@@ -91,24 +91,24 @@ std::vector<const char*> SDLUtils::get_required_instance_extensions() {
     return std::vector<const char*>(extensions, extensions + count);
 }
 
-bool SDLUtils::is_vulkan_supported() {
-    return s_vulkan_supported || initialize_sdl_for_vulkan();
+bool SDLUtils::IsVulkanSupported() {
+    return s_vulkan_supported || InitializeSdlForVulkan();
 }
 
-void* SDLUtils::get_vulkan_loader() {
-    if (!is_vulkan_supported()) {
+void* SDLUtils::GetVulkanLoader() {
+    if (!IsVulkanSupported()) {
         return nullptr;
     }
     return reinterpret_cast<void*>(SDL_Vulkan_GetVkGetInstanceProcAddr());
 }
 
-SDL_Window* SDLUtils::create_vulkan_window(const char* title,
+SDL_Window* SDLUtils::CreateVulkanWindow(const char* title,
                                             int x,
                                             int y,
                                             int width,
                                             int height,
                                             uint32_t flags) {
-    if (!initialize_sdl_for_vulkan()) {
+    if (!InitializeSdlForVulkan()) {
         return nullptr;
     }
 
@@ -124,21 +124,21 @@ SDL_Window* SDLUtils::create_vulkan_window(const char* title,
     return window;
 }
 
-void SDLUtils::get_window_size(SDL_Window* window, int* width, int* height) {
+void SDLUtils::GetWindowSize(SDL_Window* window, int* width, int* height) {
     if (!window) {
         return;
     }
     SDL_GetWindowSize(window, width, height);
 }
 
-void SDLUtils::get_drawable_size(SDL_Window* window, int* width, int* height) {
+void SDLUtils::GetDrawableSize(SDL_Window* window, int* width, int* height) {
     if (!window) {
         return;
     }
     SDL_GetWindowSizeInPixels(window, width, height);
 }
 
-bool SDLUtils::handle_window_event(const void* event) {
+bool SDLUtils::HandleWindowEvent(const void* event) {
     if (!event) {
         return false;
     }
@@ -153,68 +153,68 @@ bool SDLUtils::handle_window_event(const void* event) {
     }
 }
 
-bool SDLUtils::was_window_resized(const void* event) {
+bool SDLUtils::WasWindowResized(const void* event) {
     const SDL_Event* sdl_event = static_cast<const SDL_Event*>(event);
     return sdl_event &&
            (sdl_event->type == SDL_EVENT_WINDOW_RESIZED ||
             sdl_event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED);
 }
 
-bool SDLUtils::was_window_minimized(const void* event) {
+bool SDLUtils::WasWindowMinimized(const void* event) {
     const SDL_Event* sdl_event = static_cast<const SDL_Event*>(event);
     return sdl_event && sdl_event->type == SDL_EVENT_WINDOW_MINIMIZED;
 }
 
-bool SDLUtils::was_window_restored(const void* event) {
+bool SDLUtils::WasWindowRestored(const void* event) {
     const SDL_Event* sdl_event = static_cast<const SDL_Event*>(event);
     return sdl_event &&
            (sdl_event->type == SDL_EVENT_WINDOW_RESTORED || sdl_event->type == SDL_EVENT_WINDOW_MAXIMIZED);
 }
 
-SDL_Window* SDLUtils::get_window_from_surface(VkSurfaceKHR /*surface*/) {
+SDL_Window* SDLUtils::GetWindowFromSurface(VkSurfaceKHR /*surface*/) {
     return nullptr;
 }
 
-bool SDLUtils::is_window_minimized(SDL_Window* window) {
+bool SDLUtils::IsWindowMinimized(SDL_Window* window) {
     return window && (SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED) != 0;
 }
 
-bool SDLUtils::is_window_maximized(SDL_Window* window) {
+bool SDLUtils::IsWindowMaximized(SDL_Window* window) {
     return window && (SDL_GetWindowFlags(window) & SDL_WINDOW_MAXIMIZED) != 0;
 }
 
-bool SDLUtils::is_window_fullscreen(SDL_Window* window) {
+bool SDLUtils::IsWindowFullscreen(SDL_Window* window) {
     return window && (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN) != 0;
 }
 
-bool SDLUtils::get_key_event(const void* sdl_event, KeyEvent& key_event) {
+bool SDLUtils::GetKeyEvent(const void* sdl_event, KeyEvent& key_event) {
     const SDL_Event* event = static_cast<const SDL_Event*>(sdl_event);
     if (!event || (event->type != SDL_EVENT_KEY_DOWN && event->type != SDL_EVENT_KEY_UP)) {
         return false;
     }
 
-    key_event.scancode_ = event->key.scancode;
-    key_event.keycode_ = static_cast<int>(event->key.key);
-    key_event.pressed_ = event->key.down;
-    key_event.repeat_ = event->key.repeat;
+    key_event.scancode = event->key.scancode;
+    key_event.keycode = static_cast<int>(event->key.key);
+    key_event.pressed = event->key.down;
+    key_event.repeat = event->key.repeat;
     return true;
 }
 
-bool SDLUtils::get_mouse_event(const void* sdl_event, MouseEvent& mouse_event) {
+bool SDLUtils::GetMouseEvent(const void* sdl_event, MouseEvent& mouse_event) {
     const SDL_Event* event = static_cast<const SDL_Event*>(sdl_event);
     if (!event || (event->type != SDL_EVENT_MOUSE_BUTTON_DOWN && event->type != SDL_EVENT_MOUSE_BUTTON_UP)) {
         return false;
     }
 
-    mouse_event.x_ = static_cast<int>(event->button.x);
-    mouse_event.y_ = static_cast<int>(event->button.y);
-    mouse_event.button_ = event->button.button;
-    mouse_event.pressed_ = event->button.down;
-    mouse_event.clicks_ = event->button.clicks;
+    mouse_event.x = static_cast<int>(event->button.x);
+    mouse_event.y = static_cast<int>(event->button.y);
+    mouse_event.button = event->button.button;
+    mouse_event.pressed = event->button.down;
+    mouse_event.clicks = event->button.clicks;
     return true;
 }
 
-float SDLUtils::get_display_scale(SDL_Window* window) {
+float SDLUtils::GetDisplayScale(SDL_Window* window) {
     if (!window) {
         return 1.0f;
     }
@@ -226,15 +226,15 @@ float SDLUtils::get_display_scale(SDL_Window* window) {
     return scale;
 }
 
-void SDLUtils::get_display_dpi(SDL_Window* window, float* ddpi, float* hdpi, float* vdpi) {
-    const float scale = get_display_scale(window);
+void SDLUtils::GetDisplayDpi(SDL_Window* window, float* ddpi, float* hdpi, float* vdpi) {
+    const float scale = GetDisplayScale(window);
     const float dpi = Constants::SDL::DEFAULT_DPI * scale;
     if (ddpi) *ddpi = dpi;
     if (hdpi) *hdpi = dpi;
     if (vdpi) *vdpi = dpi;
 }
 
-int SDLUtils::get_display_count() {
+int SDLUtils::GetDisplayCount() {
     int count = 0;
     SDL_DisplayID* displays = SDL_GetDisplays(&count);
     if (displays) {
@@ -243,8 +243,8 @@ int SDLUtils::get_display_count() {
     return count;
 }
 
-void SDLUtils::get_display_bounds(int display_index, int* x, int* y, int* w, int* h) {
-    SDL_DisplayID display_id = get_display_id_from_index(display_index);
+void SDLUtils::GetDisplayBounds(int display_index, int* x, int* y, int* w, int* h) {
+    SDL_DisplayID display_id = GetDisplayIdFromIndex(display_index);
     if (display_id == 0) {
         return;
     }
@@ -258,8 +258,8 @@ void SDLUtils::get_display_bounds(int display_index, int* x, int* y, int* w, int
     }
 }
 
-void SDLUtils::get_display_usable_bounds(int display_index, int* x, int* y, int* w, int* h) {
-    SDL_DisplayID display_id = get_display_id_from_index(display_index);
+void SDLUtils::GetDisplayUsableBounds(int display_index, int* x, int* y, int* w, int* h) {
+    SDL_DisplayID display_id = GetDisplayIdFromIndex(display_index);
     if (display_id == 0) {
         return;
     }
@@ -273,47 +273,47 @@ void SDLUtils::get_display_usable_bounds(int display_index, int* x, int* y, int*
     }
 }
 
-uint64_t SDLUtils::get_performance_counter() {
+uint64_t SDLUtils::GetPerformanceCounter() {
     return SDL_GetPerformanceCounter();
 }
 
-uint64_t SDLUtils::get_performance_frequency() {
+uint64_t SDLUtils::GetPerformanceFrequency() {
     return SDL_GetPerformanceFrequency();
 }
 
-double SDLUtils::get_elapsed_time(uint64_t start, uint64_t end) {
-    uint64_t freq = get_performance_frequency();
+double SDLUtils::GetElapsedTime(uint64_t start, uint64_t end) {
+    uint64_t freq = GetPerformanceFrequency();
     if (freq == 0) {
         return 0.0;
     }
     return static_cast<double>(end - start) / static_cast<double>(freq);
 }
 
-bool SDLUtils::has_clipboard_text() {
+bool SDLUtils::HasClipboardText() {
     return SDL_HasClipboardText();
 }
 
-std::string SDLUtils::get_clipboard_text() {
+std::string SDLUtils::GetClipboardText() {
     char* text = SDL_GetClipboardText();
     std::string result = text ? text : "";
     SDL_free(text);
     return result;
 }
 
-void SDLUtils::set_clipboard_text(const std::string& text) {
+void SDLUtils::SetClipboardText(const std::string& text) {
     SDL_SetClipboardText(text.c_str());
 }
 
-std::string SDLUtils::get_sdl_error() {
+std::string SDLUtils::GetSdlError() {
     const char* error = SDL_GetError();
     return error ? error : "";
 }
 
-void SDLUtils::clear_sdl_error() {
+void SDLUtils::ClearSdlError() {
     SDL_ClearError();
 }
 
-std::string SDLUtils::get_sdl_version_string(bool /*linked*/) {
+std::string SDLUtils::GetSdlVersionString(bool /*linked*/) {
     const int version = SDL_GetVersion(); // linked sdl version
     return std::to_string(SDL_VERSIONNUM_MAJOR(version)) + "." +
            std::to_string(SDL_VERSIONNUM_MINOR(version)) + "." +
@@ -391,21 +391,21 @@ SDLWindow& SDLWindow::operator=(SDLWindow&& other) noexcept {
     return *this;
 }
 
-void SDLWindow::get_size(int* width, int* height) const {
+void SDLWindow::GetSize(int* width, int* height) const {
     if (!window_) {
         return;
     }
     SDL_GetWindowSize(window_, width, height);
 }
 
-void SDLWindow::get_drawable_size(int* width, int* height) const {
+void SDLWindow::GetDrawableSize(int* width, int* height) const {
     if (!window_) {
         return;
     }
     SDL_GetWindowSizeInPixels(window_, width, height);
 }
 
-void SDLWindow::set_title(const char* title) {
+void SDLWindow::SetTitle(const char* title) {
     if (!window_) {
         return;
     }

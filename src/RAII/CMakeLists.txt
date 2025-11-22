@@ -45,6 +45,7 @@ add_library(VulkanRAIIWrapper STATIC
 
     # utilities
     utils/Constants.cpp
+    utils/CapabilityUtils.cpp
     utils/DebugUtils.cpp
     utils/FormatUtils.cpp
     utils/ImageUtils.cpp

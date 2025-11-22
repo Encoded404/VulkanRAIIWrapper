@@ -13,27 +13,27 @@ namespace VulkanEngine::RAII {
 DescriptorSetLayout::DescriptorSetLayout(const Device& device,
                                          const std::vector<DescriptorSetLayoutBinding>& bindings,
                                          VkDescriptorSetLayoutCreateFlags flags)
-    : device_(device.get_handle()),
-      bindings_(convert_bindings(bindings)) {
+    : device_(device.GetHandle()),
+      bindings_(ConvertBindings(bindings)) {
     if (device == VK_NULL_HANDLE) {
         throw std::invalid_argument("DescriptorSetLayout requires a valid device");
     }
-    create_descriptor_set_layout(flags);
+    CreateDescriptorSetLayout(flags);
 }
 
 DescriptorSetLayout::DescriptorSetLayout(const Device& device,
                                          const std::vector<VkDescriptorSetLayoutBinding>& bindings,
                                          VkDescriptorSetLayoutCreateFlags flags)
-    : device_(device.get_handle()),
+    : device_(device.GetHandle()),
       bindings_(bindings) {
     if (device == VK_NULL_HANDLE) {
         throw std::invalid_argument("DescriptorSetLayout requires a valid device");
     }
-    create_descriptor_set_layout(flags);
+    CreateDescriptorSetLayout(flags);
 }
 
 DescriptorSetLayout::~DescriptorSetLayout() {
-    cleanup();
+    Cleanup();
 }
 
 DescriptorSetLayout::DescriptorSetLayout(DescriptorSetLayout&& other) noexcept
@@ -46,7 +46,7 @@ DescriptorSetLayout::DescriptorSetLayout(DescriptorSetLayout&& other) noexcept
 
 DescriptorSetLayout& DescriptorSetLayout::operator=(DescriptorSetLayout&& other) noexcept {
     if (this != &other) {
-        cleanup();
+        Cleanup();
         descriptorSetLayout_ = other.descriptorSetLayout_;
         device_ = other.device_;
         bindings_ = std::move(other.bindings_);
@@ -57,11 +57,11 @@ DescriptorSetLayout& DescriptorSetLayout::operator=(DescriptorSetLayout&& other)
     return *this;
 }
 
-bool DescriptorSetLayout::has_binding(uint32_t binding) const {
-    return get_binding(binding) != nullptr;
+bool DescriptorSetLayout::HasBinding(uint32_t binding) const {
+    return GetBinding(binding) != nullptr;
 }
 
-const VkDescriptorSetLayoutBinding* DescriptorSetLayout::get_binding(uint32_t binding) const {
+const VkDescriptorSetLayoutBinding* DescriptorSetLayout::GetBinding(uint32_t binding) const {
     for (const auto& layout_binding : bindings_) {
         if (layout_binding.binding == binding) {
             return &layout_binding;
@@ -70,23 +70,23 @@ const VkDescriptorSetLayoutBinding* DescriptorSetLayout::get_binding(uint32_t bi
     return nullptr;
 }
 
-VkDescriptorType DescriptorSetLayout::get_descriptor_type(uint32_t binding) const {
-    auto binding_ptr = get_binding(binding);
+VkDescriptorType DescriptorSetLayout::GetDescriptorType(uint32_t binding) const {
+    auto binding_ptr = GetBinding(binding);
     if (!binding_ptr) {
         throw std::out_of_range("Descriptor set layout binding not found");
     }
     return binding_ptr->descriptorType;
 }
 
-uint32_t DescriptorSetLayout::get_descriptor_count(uint32_t binding) const {
-    auto binding_ptr = get_binding(binding);
+uint32_t DescriptorSetLayout::GetDescriptorCount(uint32_t binding) const {
+    auto binding_ptr = GetBinding(binding);
     if (!binding_ptr) {
         throw std::out_of_range("Descriptor set layout binding not found");
     }
     return binding_ptr->descriptorCount;
 }
 
-DescriptorSetLayout DescriptorSetLayout::create_single_binding(const Device& device,
+DescriptorSetLayout DescriptorSetLayout::CreateSingleBinding(const Device& device,
                                                              uint32_t binding,
                                                              VkDescriptorType descriptor_type,
                                                              VkShaderStageFlags stage_flags,
@@ -95,7 +95,7 @@ DescriptorSetLayout DescriptorSetLayout::create_single_binding(const Device& dev
     return DescriptorSetLayout(device, std::vector<DescriptorSetLayoutBinding>{layout_binding});
 }
 
-void DescriptorSetLayout::create_descriptor_set_layout(VkDescriptorSetLayoutCreateFlags flags) {
+void DescriptorSetLayout::CreateDescriptorSetLayout(VkDescriptorSetLayoutCreateFlags flags) {
     VkDescriptorSetLayoutCreateInfo layout_info{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
     layout_info.bindingCount = static_cast<uint32_t>(bindings_.size());
     layout_info.pBindings = bindings_.empty() ? nullptr : bindings_.data();
@@ -106,7 +106,7 @@ void DescriptorSetLayout::create_descriptor_set_layout(VkDescriptorSetLayoutCrea
     }
 }
 
-void DescriptorSetLayout::cleanup() {
+void DescriptorSetLayout::Cleanup() {
     if (descriptorSetLayout_ != VK_NULL_HANDLE) {
         vkDestroyDescriptorSetLayout(device_, descriptorSetLayout_, nullptr);
         descriptorSetLayout_ = VK_NULL_HANDLE;
@@ -114,16 +114,16 @@ void DescriptorSetLayout::cleanup() {
     device_ = VK_NULL_HANDLE;
 }
 
-std::vector<VkDescriptorSetLayoutBinding> DescriptorSetLayout::convert_bindings(const std::vector<DescriptorSetLayoutBinding>& bindings) {
+std::vector<VkDescriptorSetLayoutBinding> DescriptorSetLayout::ConvertBindings(const std::vector<DescriptorSetLayoutBinding>& bindings) {
     std::vector<VkDescriptorSetLayoutBinding> vk_bindings;
     vk_bindings.reserve(bindings.size());
     for (const auto& binding : bindings) {
         VkDescriptorSetLayoutBinding vk_binding{};
-        vk_binding.binding = binding.binding_;
-        vk_binding.descriptorType = binding.descriptorType_;
-        vk_binding.descriptorCount = binding.descriptorCount_;
-        vk_binding.stageFlags = binding.stageFlags_;
-        vk_binding.pImmutableSamplers = binding.immutableSamplers_;
+        vk_binding.binding = binding.binding;
+        vk_binding.descriptorType = binding.descriptorType;
+        vk_binding.descriptorCount = binding.descriptorCount;
+        vk_binding.stageFlags = binding.stageFlags;
+        vk_binding.pImmutableSamplers = binding.immutableSamplers;
         vk_bindings.push_back(vk_binding);
     }
     return vk_bindings;

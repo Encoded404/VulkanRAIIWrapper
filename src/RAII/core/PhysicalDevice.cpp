@@ -12,14 +12,14 @@
 namespace VulkanEngine::RAII {
 
 PhysicalDevice::PhysicalDevice(const Instance& instance, VkSurfaceKHR surface)
-    : instance_(instance.get_handle()) {
-    auto devices = enumerate_physical_devices(instance);
+    : instance_(instance.GetHandle()) {
+    auto devices = EnumeratePhysicalDevices(instance);
     if (devices.empty()) {
         throw std::runtime_error("No Vulkan physical devices found");
     }
 
-    PhysicalDevice selected = select_best_device(devices, surface);
-    if (!selected.is_valid()) {
+    PhysicalDevice selected = SelectBestDevice(devices, surface);
+    if (!selected.IsValid()) {
         throw std::runtime_error("Failed to select a suitable physical device");
     }
 
@@ -27,7 +27,7 @@ PhysicalDevice::PhysicalDevice(const Instance& instance, VkSurfaceKHR surface)
 }
 
 PhysicalDevice::PhysicalDevice(VkPhysicalDevice physical_device, const Instance& instance)
-    : physicalDevice_(physical_device), instance_(instance.get_handle()) {}
+    : physicalDevice_(physical_device), instance_(instance.GetHandle()) {}
 
 PhysicalDevice::PhysicalDevice(PhysicalDevice&& other) noexcept
     : physicalDevice_(other.physicalDevice_), instance_(other.instance_) {
@@ -45,25 +45,25 @@ PhysicalDevice& PhysicalDevice::operator=(PhysicalDevice&& other) noexcept {
     return *this;
 }
 
-VkPhysicalDeviceProperties PhysicalDevice::get_properties() const {
+VkPhysicalDeviceProperties PhysicalDevice::GetProperties() const {
     VkPhysicalDeviceProperties properties{};
     vkGetPhysicalDeviceProperties(physicalDevice_, &properties);
     return properties;
 }
 
-VkPhysicalDeviceFeatures PhysicalDevice::get_features() const {
+VkPhysicalDeviceFeatures PhysicalDevice::GetFeatures() const {
     VkPhysicalDeviceFeatures features{};
     vkGetPhysicalDeviceFeatures(physicalDevice_, &features);
     return features;
 }
 
-VkPhysicalDeviceMemoryProperties PhysicalDevice::get_memory_properties() const {
+VkPhysicalDeviceMemoryProperties PhysicalDevice::GetMemoryProperties() const {
     VkPhysicalDeviceMemoryProperties memory_properties{};
     vkGetPhysicalDeviceMemoryProperties(physicalDevice_, &memory_properties);
     return memory_properties;
 }
 
-std::vector<VkQueueFamilyProperties> PhysicalDevice::get_queue_family_properties() const {
+std::vector<VkQueueFamilyProperties> PhysicalDevice::GetQueueFamilyProperties() const {
     uint32_t queue_family_count = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice_, &queue_family_count, nullptr);
 
@@ -74,7 +74,7 @@ std::vector<VkQueueFamilyProperties> PhysicalDevice::get_queue_family_properties
     return queue_families;
 }
 
-QueueFamilyIndices PhysicalDevice::find_queue_families(VkSurfaceKHR surface) const {
+QueueFamilyIndices PhysicalDevice::FindQueueFamilies(VkSurfaceKHR surface) const {
     QueueFamilyIndices indices;
     uint32_t queue_family_count = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice_, &queue_family_count, nullptr);
@@ -106,7 +106,7 @@ QueueFamilyIndices PhysicalDevice::find_queue_families(VkSurfaceKHR surface) con
             }
         }
 
-        if (indices.is_complete()) {
+        if (indices.IsComplete()) {
             break;
         }
     }
@@ -129,7 +129,7 @@ QueueFamilyIndices PhysicalDevice::find_queue_families(VkSurfaceKHR surface) con
     return indices;
 }
 
-bool PhysicalDevice::check_device_extension_support(const std::vector<const char*>& required_extensions) const {
+bool PhysicalDevice::CheckDeviceExtensionSupport(const std::vector<const char*>& required_extensions) const {
     uint32_t extension_count = 0;
     vkEnumerateDeviceExtensionProperties(physicalDevice_, nullptr, &extension_count, nullptr);
 
@@ -150,7 +150,7 @@ bool PhysicalDevice::check_device_extension_support(const std::vector<const char
     return missing.empty();
 }
 
-std::vector<VkExtensionProperties> PhysicalDevice::get_available_extensions() const {
+std::vector<VkExtensionProperties> PhysicalDevice::GetAvailableExtensions() const {
     uint32_t extension_count = 0;
     vkEnumerateDeviceExtensionProperties(physicalDevice_, nullptr, &extension_count, nullptr);
 
@@ -159,54 +159,54 @@ std::vector<VkExtensionProperties> PhysicalDevice::get_available_extensions() co
     return extensions;
 }
 
-SwapChainSupportDetails PhysicalDevice::query_swap_chain_support(VkSurfaceKHR surface) const {
+SwapChainSupportDetails PhysicalDevice::QuerySwapChainSupport(VkSurfaceKHR surface) const {
     SwapChainSupportDetails details{};
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice_, surface, &details.capabilities_);
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice_, surface, &details.capabilities);
 
     uint32_t format_count = 0;
     vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice_, surface, &format_count, nullptr);
     if (format_count != 0) {
-        details.formats_.resize(format_count);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice_, surface, &format_count, details.formats_.data());
+        details.formats.resize(format_count);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice_, surface, &format_count, details.formats.data());
     }
 
     uint32_t present_mode_count = 0;
     vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice_, surface, &present_mode_count, nullptr);
     if (present_mode_count != 0) {
-        details.presentModes_.resize(present_mode_count);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice_, surface, &present_mode_count, details.presentModes_.data());
+        details.presentModes.resize(present_mode_count);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice_, surface, &present_mode_count, details.presentModes.data());
     }
 
     return details;
 }
 
-bool PhysicalDevice::is_device_suitable(VkSurfaceKHR surface,
+bool PhysicalDevice::IsDeviceSuitable(VkSurfaceKHR surface,
                                       const std::vector<const char*>& required_extensions) const {
-    QueueFamilyIndices indices = find_queue_families(surface);
+    QueueFamilyIndices indices = FindQueueFamilies(surface);
 
-    bool extensions_supported = check_device_extension_support(required_extensions);
+    bool extensions_supported = CheckDeviceExtensionSupport(required_extensions);
 
     bool swap_chain_adequate = true;
     if (extensions_supported && surface != VK_NULL_HANDLE) {
-        auto swapchain_support = query_swap_chain_support(surface);
-        swap_chain_adequate = !swapchain_support.formats_.empty() && !swapchain_support.presentModes_.empty();
+        auto swapchain_support = QuerySwapChainSupport(surface);
+        swap_chain_adequate = !swapchain_support.formats.empty() && !swapchain_support.presentModes.empty();
     }
 
-    VkPhysicalDeviceFeatures supported_features = get_features();
+    VkPhysicalDeviceFeatures supported_features = GetFeatures();
 
-    return indices.is_complete() && extensions_supported && swap_chain_adequate && supported_features.samplerAnisotropy;
+    return indices.IsComplete() && extensions_supported && swap_chain_adequate && supported_features.samplerAnisotropy;
 }
 
-std::vector<PhysicalDevice> PhysicalDevice::enumerate_physical_devices(const Instance& instance) {
+std::vector<PhysicalDevice> PhysicalDevice::EnumeratePhysicalDevices(const Instance& instance) {
     uint32_t device_count = 0;
-    vkEnumeratePhysicalDevices(instance.get_handle(), &device_count, nullptr);
+    vkEnumeratePhysicalDevices(instance.GetHandle(), &device_count, nullptr);
 
     if (device_count == 0) {
         return {};
     }
 
     std::vector<VkPhysicalDevice> devices(device_count);
-    vkEnumeratePhysicalDevices(instance.get_handle(), &device_count, devices.data());
+    vkEnumeratePhysicalDevices(instance.GetHandle(), &device_count, devices.data());
 
     std::vector<PhysicalDevice> result;
     result.reserve(device_count);
@@ -216,7 +216,7 @@ std::vector<PhysicalDevice> PhysicalDevice::enumerate_physical_devices(const Ins
     return result;
 }
 
-uint32_t PhysicalDevice::find_memory_type(uint32_t type_filter, VkMemoryPropertyFlags properties) const {
+uint32_t PhysicalDevice::FindMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties) const {
     VkPhysicalDeviceMemoryProperties mem_properties{};
     vkGetPhysicalDeviceMemoryProperties(physicalDevice_, &mem_properties);
 
@@ -229,10 +229,10 @@ uint32_t PhysicalDevice::find_memory_type(uint32_t type_filter, VkMemoryProperty
     throw std::runtime_error("Failed to find suitable memory type");
 }
 
-int PhysicalDevice::get_device_score() const {
+int PhysicalDevice::GetDeviceScore() const {
     int score = 0;
-    VkPhysicalDeviceProperties properties = get_properties();
-    VkPhysicalDeviceFeatures features = get_features();
+    VkPhysicalDeviceProperties properties = GetProperties();
+    VkPhysicalDeviceFeatures features = GetFeatures();
 
     if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
         score += 1000;
@@ -250,20 +250,20 @@ int PhysicalDevice::get_device_score() const {
     return score;
 }
 
-PhysicalDevice PhysicalDevice::select_best_device(const std::vector<PhysicalDevice>& devices,
+PhysicalDevice PhysicalDevice::SelectBestDevice(const std::vector<PhysicalDevice>& devices,
                                                VkSurfaceKHR surface) {
     PhysicalDevice best;
     int best_score = -1;
 
     for (const auto& device : devices) {
-        int score = device.get_device_score();
+        int score = device.GetDeviceScore();
         if (score <= 0) {
             continue;
         }
 
         if (surface != VK_NULL_HANDLE) {
-            auto swapchain_support = device.query_swap_chain_support(surface);
-            if (swapchain_support.formats_.empty() || swapchain_support.presentModes_.empty()) {
+            auto swapchain_support = device.QuerySwapChainSupport(surface);
+            if (swapchain_support.formats.empty() || swapchain_support.presentModes.empty()) {
                 continue;
             }
         }

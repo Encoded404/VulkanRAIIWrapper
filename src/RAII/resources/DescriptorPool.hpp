@@ -36,52 +36,52 @@ public:
     DescriptorPool(const DescriptorPool&) = delete;
     DescriptorPool& operator=(const DescriptorPool&) = delete;
 
-    [[nodiscard]] VkDescriptorPool get_handle() const { return descriptorPool_; }
+    [[nodiscard]] VkDescriptorPool GetHandle() const { return descriptorPool_; }
     
     // Implicit conversion to VkDescriptorPool
     operator VkDescriptorPool() const { return descriptorPool_; }
 
     // Check if the descriptor pool is valid
-    [[nodiscard]] bool is_valid() const { return descriptorPool_ != VK_NULL_HANDLE; }
+    [[nodiscard]] bool IsValid() const { return descriptorPool_ != VK_NULL_HANDLE; }
 
     // Allocate descriptor sets
-    std::vector<VkDescriptorSet> allocate_descriptor_sets(const std::vector<VkDescriptorSetLayout>& layouts);
+    std::vector<VkDescriptorSet> AllocateDescriptorSets(const std::vector<VkDescriptorSetLayout>& layouts);
 
     // Allocate single descriptor set
-    VkDescriptorSet allocate_descriptor_set(VkDescriptorSetLayout layout);
+    VkDescriptorSet AllocateDescriptorSet(VkDescriptorSetLayout layout);
 
     // Update descriptor sets (simple wrapper around vkUpdateDescriptorSets)
-    void update_descriptor_sets(const std::vector<VkWriteDescriptorSet>& writes,
+    void UpdateDescriptorSets(const std::vector<VkWriteDescriptorSet>& writes,
                                 const std::vector<VkCopyDescriptorSet>& copies = {}) const;
 
     // Free descriptor sets (only if pool was created with FREE_DESCRIPTOR_SET_BIT)
-    void free_descriptor_sets(const std::vector<VkDescriptorSet>& descriptor_sets);
+    void FreeDescriptorSets(const std::vector<VkDescriptorSet>& descriptor_sets);
 
     // Free single descriptor set
-    void free_descriptor_set(VkDescriptorSet descriptor_set);
+    void FreeDescriptorSet(VkDescriptorSet descriptor_set);
 
     // Reset descriptor pool
-    void reset(VkDescriptorPoolResetFlags flags = 0);
+    void Reset(VkDescriptorPoolResetFlags flags = 0);
 
     // Get max sets
-    [[nodiscard]] uint32_t get_max_sets() const { return maxSets_; }
+    [[nodiscard]] uint32_t GetMaxSets() const { return maxSets_; }
 
     // Get pool sizes
-    [[nodiscard]] const std::vector<VkDescriptorPoolSize>& get_pool_sizes() const { return poolSizes_; }
+    [[nodiscard]] const std::vector<VkDescriptorPoolSize>& GetPoolSizes() const { return poolSizes_; }
 
     // Check if pool allows individual descriptor set freeing
-    [[nodiscard]] bool allows_individual_free() const { return allowsIndividualFree_; }
+    [[nodiscard]] bool AllowsIndividualFree() const { return allowsIndividualFree_; }
 
     // Helper to create pool for common use cases
-    static DescriptorPool create_for_uniform_buffers(const Device& device,
+    static DescriptorPool CreateForUniformBuffers(const Device& device,
                                                   uint32_t max_sets,
                                                   uint32_t uniform_buffer_count = 1);
 
-    static DescriptorPool create_for_textures(const Device& device,
+    static DescriptorPool CreateForTextures(const Device& device,
                                            uint32_t max_sets,
                                            uint32_t texture_count = 1);
 
-    static DescriptorPool create_for_mixed(const Device& device,
+    static DescriptorPool CreateForMixed(const Device& device,
                                         uint32_t max_sets,
                                         uint32_t uniform_buffer_count = 1,
                                         uint32_t sampler_count = 1,
@@ -95,8 +95,8 @@ private:
     bool allowsIndividualFree_{false};
 
     // Helper methods
-    void create_descriptor_pool(VkDescriptorPoolCreateFlags flags);
-    void cleanup();
+    void CreateDescriptorPool(VkDescriptorPoolCreateFlags flags);
+    void Cleanup();
 };
 
 } // namespace VulkanEngine::RAII

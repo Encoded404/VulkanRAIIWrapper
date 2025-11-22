@@ -66,24 +66,24 @@ public:
     Pipeline(const Pipeline&) = delete;
     Pipeline& operator=(const Pipeline&) = delete;
 
-    [[nodiscard]] VkPipeline get_handle() const { return pipeline_; }
+    [[nodiscard]] VkPipeline GetHandle() const { return pipeline_; }
     
     // Implicit conversion to VkPipeline
     operator VkPipeline() const { return pipeline_; }
 
     // Check if the pipeline is valid
-    [[nodiscard]] bool is_valid() const { return pipeline_ != VK_NULL_HANDLE; }
+    [[nodiscard]] bool IsValid() const { return pipeline_ != VK_NULL_HANDLE; }
 
     // Get pipeline layout
-    [[nodiscard]] VkPipelineLayout get_layout() const { return layout_; }
+    [[nodiscard]] VkPipelineLayout GetLayout() const { return layout_; }
 
     // Check pipeline type
-    [[nodiscard]] bool is_graphics_pipeline() const { return type_ == Type::GRAPHICS; }
-    [[nodiscard]] bool is_compute_pipeline() const { return type_ == Type::COMPUTE; }
+    [[nodiscard]] bool IsGraphicsPipeline() const { return type_ == Type::GRAPHICS; }
+    [[nodiscard]] bool IsComputePipeline() const { return type_ == Type::COMPUTE; }
 
     // Get bind point
-    [[nodiscard]] VkPipelineBindPoint get_bind_point() const {
-        return is_graphics_pipeline() ? VK_PIPELINE_BIND_POINT_GRAPHICS : VK_PIPELINE_BIND_POINT_COMPUTE;
+    [[nodiscard]] VkPipelineBindPoint GetBindPoint() const {
+        return IsGraphicsPipeline() ? VK_PIPELINE_BIND_POINT_GRAPHICS : VK_PIPELINE_BIND_POINT_COMPUTE;
     }
 
 private:
@@ -98,7 +98,7 @@ private:
     Type type_; // Intentionally no default: all ctors must set this
 
     // Helper methods
-    void create_graphics_pipeline(const RenderPass& render_pass,
+    void CreateGraphicsPipeline(const RenderPass& render_pass,
                                const std::vector<PipelineShaderStage>& shader_stages,
                                const PipelineVertexInput& vertex_input,
                                const PipelineInputAssembly& input_assembly,
@@ -112,7 +112,7 @@ private:
                                VkPipeline base_pipeline,
                                int32_t base_pipeline_index);
 
-    void create_graphics_pipeline_with_tessellation(const RenderPass& render_pass,
+    void CreateGraphicsPipelineWithTessellation(const RenderPass& render_pass,
                                                const std::vector<PipelineShaderStage>& shader_stages,
                                                const PipelineVertexInput& vertex_input,
                                                const PipelineInputAssembly& input_assembly,
@@ -127,11 +127,11 @@ private:
                                                VkPipeline base_pipeline,
                                                int32_t base_pipeline_index);
 
-    void create_compute_pipeline(const PipelineShaderStage& compute_stage,
+    void CreateComputePipeline(const PipelineShaderStage& compute_stage,
                               VkPipeline base_pipeline,
                               int32_t base_pipeline_index);
 
-    void cleanup();
+    void Cleanup();
 };
 
 } // namespace VulkanEngine::RAII

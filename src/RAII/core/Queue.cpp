@@ -49,7 +49,7 @@ Queue& Queue::operator=(Queue&& other) noexcept {
     return *this;
 }
 
-VkResult Queue::submit(const std::vector<VkCommandBuffer>& command_buffers,
+VkResult Queue::Submit(const std::vector<VkCommandBuffer>& command_buffers,
                        const std::vector<VkSemaphore>& wait_semaphores,
                        const std::vector<VkPipelineStageFlags>& wait_stages,
                        const std::vector<VkSemaphore>& signal_semaphores,
@@ -58,11 +58,11 @@ VkResult Queue::submit(const std::vector<VkCommandBuffer>& command_buffers,
         throw std::runtime_error("Wait semaphores and stage masks size mismatch");
     }
 
-    VkSubmitInfo submit_info = create_submit_info(command_buffers, wait_semaphores, wait_stages, signal_semaphores);
+    VkSubmitInfo submit_info = CreateSubmitInfo(command_buffers, wait_semaphores, wait_stages, signal_semaphores);
     return vkQueueSubmit(queue_, 1, &submit_info, fence);
 }
 
-VkResult Queue::submit(VkCommandBuffer command_buffer,
+VkResult Queue::Submit(VkCommandBuffer command_buffer,
                        VkSemaphore wait_semaphore,
                        VkPipelineStageFlags wait_stage,
                        VkSemaphore signal_semaphore,
@@ -80,21 +80,21 @@ VkResult Queue::submit(VkCommandBuffer command_buffer,
         signal_semaphores.push_back(signal_semaphore);
     }
 
-    return submit(command_buffers, wait_semaphores, wait_stages, signal_semaphores, fence);
+    return Submit(command_buffers, wait_semaphores, wait_stages, signal_semaphores, fence);
 }
 
-VkResult Queue::present(const std::vector<VkSwapchainKHR>& swap_chains,
+VkResult Queue::Present(const std::vector<VkSwapchainKHR>& swap_chains,
                         const std::vector<uint32_t>& image_indices,
                         const std::vector<VkSemaphore>& wait_semaphores) const {
     if (swap_chains.size() != image_indices.size()) {
         throw std::runtime_error("Swapchain and image index size mismatch");
     }
 
-    VkPresentInfoKHR present_info = create_present_info(swap_chains, image_indices, wait_semaphores);
+    VkPresentInfoKHR present_info = CreatePresentInfo(swap_chains, image_indices, wait_semaphores);
     return vkQueuePresentKHR(queue_, &present_info);
 }
 
-VkResult Queue::present(VkSwapchainKHR swap_chain,
+VkResult Queue::Present(VkSwapchainKHR swap_chain,
                         uint32_t image_index,
                         VkSemaphore wait_semaphore) const {
     std::vector<VkSwapchainKHR> swap_chains{swap_chain};
@@ -103,39 +103,39 @@ VkResult Queue::present(VkSwapchainKHR swap_chain,
     if (wait_semaphore != VK_NULL_HANDLE) {
         wait_semaphores.push_back(wait_semaphore);
     }
-    return present(swap_chains, image_indices, wait_semaphores);
+    return Present(swap_chains, image_indices, wait_semaphores);
 }
 
-VkResult Queue::wait_idle() const {
+VkResult Queue::WaitIdle() const {
     return vkQueueWaitIdle(queue_);
 }
 
-VkResult Queue::bind_sparse(const std::vector<VkBindSparseInfo>& bind_info,
+VkResult Queue::BindSparse(const std::vector<VkBindSparseInfo>& bind_info,
                            VkFence fence) const {
     return vkQueueBindSparse(queue_, static_cast<uint32_t>(bind_info.size()), bind_info.data(), fence);
 }
 
-VkQueueFlags Queue::get_queue_capabilities(const Device& device, uint32_t queue_family_index) {
-    auto properties = device.get_physical_device().get_queue_family_properties();
+VkQueueFlags Queue::GetQueueCapabilities(const Device& device, uint32_t queue_family_index) {
+    auto properties = device.GetPhysicalDevice().GetQueueFamilyProperties();
     if (queue_family_index >= properties.size()) {
         return 0;
     }
     return properties[queue_family_index].queueFlags;
 }
 
-bool Queue::supports_graphics() const {
+bool Queue::SupportsGraphics() const {
     return (capabilities_ & VK_QUEUE_GRAPHICS_BIT) != 0;
 }
 
-bool Queue::supports_compute() const {
+bool Queue::SupportsCompute() const {
     return (capabilities_ & VK_QUEUE_COMPUTE_BIT) != 0;
 }
 
-bool Queue::supports_transfer() const {
+bool Queue::SupportsTransfer() const {
     return (capabilities_ & VK_QUEUE_TRANSFER_BIT) != 0;
 }
 
-VkSubmitInfo Queue::create_submit_info(const std::vector<VkCommandBuffer>& command_buffers,
+VkSubmitInfo Queue::CreateSubmitInfo(const std::vector<VkCommandBuffer>& command_buffers,
                                      const std::vector<VkSemaphore>& wait_semaphores,
                                      const std::vector<VkPipelineStageFlags>& wait_stages,
                                      const std::vector<VkSemaphore>& signal_semaphores) const {
@@ -153,7 +153,7 @@ VkSubmitInfo Queue::create_submit_info(const std::vector<VkCommandBuffer>& comma
     return submit_info;
 }
 
-VkPresentInfoKHR Queue::create_present_info(const std::vector<VkSwapchainKHR>& swap_chains,
+VkPresentInfoKHR Queue::CreatePresentInfo(const std::vector<VkSwapchainKHR>& swap_chains,
                                           const std::vector<uint32_t>& image_indices,
                                           const std::vector<VkSemaphore>& wait_semaphores) const {
     VkPresentInfoKHR present_info{VK_STRUCTURE_TYPE_PRESENT_INFO_KHR};
@@ -167,29 +167,28 @@ VkPresentInfoKHR Queue::create_present_info(const std::vector<VkSwapchainKHR>& s
 }
 
 QueueManager::QueueManager(const Device& device) {
-    initialize_queues(device);
+    InitializeQueues(device);
 }
 
-void QueueManager::initialize_queues(const Device& device) {
-    QueueFamilyIndices indices = device.get_queue_family_indices();
-
+void QueueManager::InitializeQueues(const Device& device) {
+    QueueFamilyIndices indices = device.GetQueueFamilyIndices();
     if (indices.graphicsFamily_.has_value()) {
-        VkQueue queue = device.get_graphics_queue();
+        VkQueue queue = device.GetGraphicsQueue();
         graphicsQueue_ = Queue(queue, indices.graphicsFamily_.value(), QueueType::GRAPHICS);
     }
 
     if (indices.presentFamily_.has_value()) {
-        VkQueue queue = device.get_present_queue();
+        VkQueue queue = device.GetPresentQueue();
         presentQueue_ = Queue(queue, indices.presentFamily_.value(), QueueType::PRESENT);
     }
 
     if (indices.computeFamily_.has_value()) {
-        VkQueue queue = device.get_compute_queue();
+        VkQueue queue = device.GetComputeQueue();
         computeQueue_ = Queue(queue, indices.computeFamily_.value(), QueueType::COMPUTE);
     }
 
     if (indices.transferFamily_.has_value()) {
-        VkQueue queue = device.get_transfer_queue();
+        VkQueue queue = device.GetTransferQueue();
         transferQueue_ = Queue(queue, indices.transferFamily_.value(), QueueType::TRANSFER);
     }
 }

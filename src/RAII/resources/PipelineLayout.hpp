@@ -27,35 +27,35 @@ public:
     PipelineLayout(const PipelineLayout&) = delete;
     PipelineLayout& operator=(const PipelineLayout&) = delete;
 
-    [[nodiscard]] VkPipelineLayout get_handle() const { return pipelineLayout_; }
+    [[nodiscard]] VkPipelineLayout GetHandle() const { return pipelineLayout_; }
     
     // Implicit conversion to VkPipelineLayout
     operator VkPipelineLayout() const { return pipelineLayout_; }
 
     // Check if the pipeline layout is valid
-    [[nodiscard]] bool is_valid() const { return pipelineLayout_ != VK_NULL_HANDLE; }
+    [[nodiscard]] bool IsValid() const { return pipelineLayout_ != VK_NULL_HANDLE; }
 
     // Get descriptor set layout count
-    [[nodiscard]] uint32_t get_set_layout_count() const { return static_cast<uint32_t>(setLayouts_.size()); }
+    [[nodiscard]] uint32_t GetSetLayoutCount() const { return static_cast<uint32_t>(setLayouts_.size()); }
 
     // Get push constant range count
-    [[nodiscard]] uint32_t get_push_constant_range_count() const { return static_cast<uint32_t>(pushConstantRanges_.size()); }
+    [[nodiscard]] uint32_t GetPushConstantRangeCount() const { return static_cast<uint32_t>(pushConstantRanges_.size()); }
 
     // Get descriptor set layouts
-    [[nodiscard]] const std::vector<VkDescriptorSetLayout>& get_set_layouts() const { return setLayouts_; }
+    [[nodiscard]] const std::vector<VkDescriptorSetLayout>& GetSetLayouts() const { return setLayouts_; }
 
     // Get push constant ranges
-    [[nodiscard]] const std::vector<VkPushConstantRange>& get_push_constant_ranges() const { return pushConstantRanges_; }
+    [[nodiscard]] const std::vector<VkPushConstantRange>& GetPushConstantRanges() const { return pushConstantRanges_; }
 
     // Helper to create simple layout with single descriptor set
-    static PipelineLayout create_single_set(const Device& device, VkDescriptorSetLayout set_layout);
+    static PipelineLayout CreateSingleSet(const Device& device, VkDescriptorSetLayout set_layout);
 
     // Helper to create layout with push constants only
-    static PipelineLayout create_push_constants_only(const Device& device,
+    static PipelineLayout CreatePushConstantsOnly(const Device& device,
                                                   const std::vector<VkPushConstantRange>& push_constant_ranges);
 
     // Helper to create empty layout
-    static PipelineLayout create_empty(const Device& device);
+    static PipelineLayout CreateEmpty(const Device& device);
 
 private:
     VkPipelineLayout pipelineLayout_{VK_NULL_HANDLE};
@@ -64,8 +64,8 @@ private:
     std::vector<VkPushConstantRange> pushConstantRanges_;
 
     // Helper methods
-    void create_pipeline_layout();
-    void cleanup();
+    void CreatePipelineLayout();
+    void Cleanup();
 };
 
 } // namespace VulkanEngine::RAII

@@ -10,17 +10,17 @@
 namespace VulkanEngine::RAII {
 
 Semaphore::Semaphore(const Device& device, VkSemaphoreCreateFlags flags)
-    : device_(device.get_handle()) {
-    create_semaphore(flags, nullptr);
+    : device_(device.GetHandle()) {
+    CreateSemaphore(flags, nullptr);
 }
 
 Semaphore::Semaphore(const Device& device, uint64_t initial_value, VkSemaphoreCreateFlags flags)
-    : device_(device.get_handle()), isTimelineSemaphore_(true) {
-    create_semaphore(flags, &initial_value);
+    : device_(device.GetHandle()), isTimelineSemaphore_(true) {
+    CreateSemaphore(flags, &initial_value);
 }
 
 Semaphore::~Semaphore() {
-    cleanup();
+    Cleanup();
 }
 
 Semaphore::Semaphore(Semaphore&& other) noexcept
@@ -34,7 +34,7 @@ Semaphore::Semaphore(Semaphore&& other) noexcept
 
 Semaphore& Semaphore::operator=(Semaphore&& other) noexcept {
     if (this != &other) {
-        cleanup();
+        Cleanup();
         semaphore_ = other.semaphore_;
         device_ = other.device_;
         isTimelineSemaphore_ = other.isTimelineSemaphore_;
@@ -45,7 +45,7 @@ Semaphore& Semaphore::operator=(Semaphore&& other) noexcept {
     return *this;
 }
 
-uint64_t Semaphore::get_counter_value() const {
+uint64_t Semaphore::GetCounterValue() const {
     if (!isTimelineSemaphore_) {
         throw std::runtime_error("Semaphore is not a timeline semaphore");
     }
@@ -54,7 +54,7 @@ uint64_t Semaphore::get_counter_value() const {
     return value;
 }
 
-VkResult Semaphore::wait(uint64_t value, uint64_t timeout) const {
+VkResult Semaphore::Wait(uint64_t value, uint64_t timeout) const {
     VkSemaphoreWaitInfo wait_info{VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO};
     wait_info.flags = 0;
     wait_info.semaphoreCount = 1;
@@ -63,14 +63,14 @@ VkResult Semaphore::wait(uint64_t value, uint64_t timeout) const {
     return vkWaitSemaphores(device_, &wait_info, timeout);
 }
 
-VkResult Semaphore::signal(uint64_t value) const {
+VkResult Semaphore::Signal(uint64_t value) const {
     VkSemaphoreSignalInfo signal_info{VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO};
     signal_info.semaphore = semaphore_;
     signal_info.value = value;
     return vkSignalSemaphore(device_, &signal_info);
 }
 
-VkResult Semaphore::wait_semaphores(const Device& device,
+VkResult Semaphore::WaitSemaphores(const Device& device,
                                    const std::vector<VkSemaphore>& semaphores,
                                    const std::vector<uint64_t>& values,
                                    bool wait_all,
@@ -85,10 +85,10 @@ VkResult Semaphore::wait_semaphores(const Device& device,
     wait_info.pSemaphores = semaphores.data();
     wait_info.pValues = values.data();
 
-    return vkWaitSemaphores(device.get_handle(), &wait_info, timeout);
+    return vkWaitSemaphores(device.GetHandle(), &wait_info, timeout);
 }
 
-VkResult Semaphore::signal_semaphores(const Device& device,
+VkResult Semaphore::SignalSemaphores(const Device& device,
                                      const std::vector<VkSemaphore>& semaphores,
                                      const std::vector<uint64_t>& values) {
     if (semaphores.size() != values.size()) {
@@ -103,7 +103,7 @@ VkResult Semaphore::signal_semaphores(const Device& device,
     for (size_t i = 0; i < semaphores.size(); ++i) {
         signal_info.semaphore = semaphores[i];
         signal_info.value = values[i];
-        result = vkSignalSemaphore(device.get_handle(), &signal_info);
+        result = vkSignalSemaphore(device.GetHandle(), &signal_info);
         if (result != VK_SUCCESS) {
             break;
         }
@@ -111,7 +111,7 @@ VkResult Semaphore::signal_semaphores(const Device& device,
     return result;
 }
 
-void Semaphore::create_semaphore(VkSemaphoreCreateFlags flags, uint64_t* initial_value) {
+void Semaphore::CreateSemaphore(VkSemaphoreCreateFlags flags, uint64_t* initial_value) {
     VkSemaphoreCreateInfo semaphore_info{VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
     semaphore_info.flags = flags;
 
@@ -127,7 +127,7 @@ void Semaphore::create_semaphore(VkSemaphoreCreateFlags flags, uint64_t* initial
     }
 }
 
-void Semaphore::cleanup() {
+void Semaphore::Cleanup() {
     if (semaphore_ != VK_NULL_HANDLE) {
         vkDestroySemaphore(device_, semaphore_, nullptr);
         semaphore_ = VK_NULL_HANDLE;

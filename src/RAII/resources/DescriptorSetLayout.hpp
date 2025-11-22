@@ -10,11 +10,11 @@ namespace VulkanEngine::RAII {
 class Device; // Forward declaration
 
 struct DescriptorSetLayoutBinding {
-    uint32_t binding_;
-    VkDescriptorType descriptorType_;
-    uint32_t descriptorCount_ = 1;
-    VkShaderStageFlags stageFlags_;
-    const VkSampler* immutableSamplers_ = nullptr;
+    uint32_t binding;
+    VkDescriptorType descriptorType;
+    uint32_t descriptorCount = 1;
+    VkShaderStageFlags stageFlags;
+    const VkSampler* immutableSamplers = nullptr;
 };
 
 class DescriptorSetLayout {
@@ -40,34 +40,34 @@ public:
     DescriptorSetLayout(const DescriptorSetLayout&) = delete;
     DescriptorSetLayout& operator=(const DescriptorSetLayout&) = delete;
 
-    [[nodiscard]] VkDescriptorSetLayout get_handle() const { return descriptorSetLayout_; }
+    [[nodiscard]] VkDescriptorSetLayout GetHandle() const { return descriptorSetLayout_; }
     
     // Implicit conversion to VkDescriptorSetLayout
     operator VkDescriptorSetLayout() const { return descriptorSetLayout_; }
 
     // Check if the descriptor set layout is valid
-    [[nodiscard]] bool is_valid() const { return descriptorSetLayout_ != VK_NULL_HANDLE; }
+    [[nodiscard]] bool IsValid() const { return descriptorSetLayout_ != VK_NULL_HANDLE; }
 
     // Get binding count
-    [[nodiscard]] uint32_t get_binding_count() const { return static_cast<uint32_t>(bindings_.size()); }
+    [[nodiscard]] uint32_t GetBindingCount() const { return static_cast<uint32_t>(bindings_.size()); }
 
     // Get bindings
-    [[nodiscard]] const std::vector<VkDescriptorSetLayoutBinding>& get_bindings() const { return bindings_; }
+    [[nodiscard]] const std::vector<VkDescriptorSetLayoutBinding>& GetBindings() const { return bindings_; }
 
     // Check if binding exists
-    [[nodiscard]] bool has_binding(uint32_t binding) const;
+    [[nodiscard]] bool HasBinding(uint32_t binding) const;
 
     // Get binding by index
-    [[nodiscard]] const VkDescriptorSetLayoutBinding* get_binding(uint32_t binding) const;
+    [[nodiscard]] const VkDescriptorSetLayoutBinding* GetBinding(uint32_t binding) const;
 
     // Get descriptor type for binding
-    [[nodiscard]] VkDescriptorType get_descriptor_type(uint32_t binding) const;
+    [[nodiscard]] VkDescriptorType GetDescriptorType(uint32_t binding) const;
 
     // Get descriptor count for binding
-    [[nodiscard]] uint32_t get_descriptor_count(uint32_t binding) const;
+    [[nodiscard]] uint32_t GetDescriptorCount(uint32_t binding) const;
 
     // Helper to create common layouts
-    static DescriptorSetLayout create_single_binding(const Device& device,
+    static DescriptorSetLayout CreateSingleBinding(const Device& device,
                                                    uint32_t binding,
                                                    VkDescriptorType descriptor_type,
                                                    VkShaderStageFlags stage_flags,
@@ -79,11 +79,11 @@ private:
     std::vector<VkDescriptorSetLayoutBinding> bindings_;
 
     // Helper methods
-    void create_descriptor_set_layout(VkDescriptorSetLayoutCreateFlags flags);
-    void cleanup();
+    void CreateDescriptorSetLayout(VkDescriptorSetLayoutCreateFlags flags);
+    void Cleanup();
     
     // Convert custom bindings to Vulkan bindings
-    std::vector<VkDescriptorSetLayoutBinding> convert_bindings(const std::vector<DescriptorSetLayoutBinding>& bindings);
+    std::vector<VkDescriptorSetLayoutBinding> ConvertBindings(const std::vector<DescriptorSetLayoutBinding>& bindings);
 };
 
 } // namespace VulkanEngine::RAII

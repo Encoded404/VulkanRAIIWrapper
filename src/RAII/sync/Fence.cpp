@@ -9,12 +9,12 @@
 namespace VulkanEngine::RAII {
 
 Fence::Fence(const Device& device, VkFenceCreateFlags flags)
-    : device_(device.get_handle()) {
-    create_fence(flags);
+    : device_(device.GetHandle()) {
+    CreateFence(flags);
 }
 
 Fence::~Fence() {
-    cleanup();
+    Cleanup();
 }
 
 Fence::Fence(Fence&& other) noexcept
@@ -26,7 +26,7 @@ Fence::Fence(Fence&& other) noexcept
 
 Fence& Fence::operator=(Fence&& other) noexcept {
     if (this != &other) {
-        cleanup();
+        Cleanup();
         fence_ = other.fence_;
         device_ = other.device_;
         other.fence_ = VK_NULL_HANDLE;
@@ -35,44 +35,44 @@ Fence& Fence::operator=(Fence&& other) noexcept {
     return *this;
 }
 
-VkResult Fence::wait(uint64_t timeout) const {
+VkResult Fence::Wait(uint64_t timeout) const {
     return vkWaitForFences(device_, 1, &fence_, VK_TRUE, timeout);
 }
 
-VkResult Fence::get_status() const {
+VkResult Fence::GetStatus() const {
     return vkGetFenceStatus(device_, fence_);
 }
 
-VkResult Fence::reset() const {
+VkResult Fence::Reset() const {
     return vkResetFences(device_, 1, &fence_);
 }
 
-bool Fence::is_signaled() const {
-    return get_status() == VK_SUCCESS;
+bool Fence::IsSignaled() const {
+    return GetStatus() == VK_SUCCESS;
 }
 
-VkResult Fence::wait_for_fences(const Device& device,
+VkResult Fence::WaitForFences(const Device& device,
                               const std::vector<VkFence>& fences,
                               bool wait_all,
                               uint64_t timeout) {
-    return vkWaitForFences(device.get_handle(),
+    return vkWaitForFences(device.GetHandle(),
                            static_cast<uint32_t>(fences.size()),
                            fences.data(),
                            wait_all ? VK_TRUE : VK_FALSE,
                            timeout);
 }
 
-VkResult Fence::reset_fences(const Device& device,
+VkResult Fence::ResetFences(const Device& device,
                             const std::vector<VkFence>& fences) {
-    return vkResetFences(device.get_handle(),
+    return vkResetFences(device.GetHandle(),
                          static_cast<uint32_t>(fences.size()),
                          fences.data());
 }
 
-VkResult Fence::wait_and_reset(uint64_t timeout) {
-    VkResult result = wait(timeout);
+VkResult Fence::WaitAndReset(uint64_t timeout) {
+    VkResult result = Wait(timeout);
     if (result == VK_SUCCESS) {
-        VkResult reset_result = reset();
+        VkResult reset_result = Reset();
         if (reset_result != VK_SUCCESS) {
             return reset_result;
         }
@@ -80,7 +80,7 @@ VkResult Fence::wait_and_reset(uint64_t timeout) {
     return result;
 }
 
-void Fence::create_fence(VkFenceCreateFlags flags) {
+void Fence::CreateFence(VkFenceCreateFlags flags) {
     VkFenceCreateInfo fence_info{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
     fence_info.flags = flags;
 
@@ -89,7 +89,7 @@ void Fence::create_fence(VkFenceCreateFlags flags) {
     }
 }
 
-void Fence::cleanup() {
+void Fence::Cleanup() {
     if (fence_ != VK_NULL_HANDLE) {
         vkDestroyFence(device_, fence_, nullptr);
         fence_ = VK_NULL_HANDLE;

@@ -31,40 +31,40 @@ public:
     Shader(const Shader&) = delete;
     Shader& operator=(const Shader&) = delete;
 
-    [[nodiscard]] VkShaderModule get_handle() const { return shaderModule_; }
+    [[nodiscard]] VkShaderModule GetHandle() const { return shaderModule_; }
     
     // Implicit conversion to VkShaderModule
     operator VkShaderModule() const { return shaderModule_; }
 
     // Check if the shader is valid
-    [[nodiscard]] bool is_valid() const { return shaderModule_ != VK_NULL_HANDLE; }
+    [[nodiscard]] bool IsValid() const { return shaderModule_ != VK_NULL_HANDLE; }
 
     // Get SPIR-V code
-    [[nodiscard]] const std::vector<uint32_t>& get_spir_v_code() const { return spirvCode_; }
+    [[nodiscard]] const std::vector<uint32_t>& GetSpirVCode() const { return spirvCode_; }
 
     // Get code size in bytes
-    [[nodiscard]] size_t get_code_size() const { return spirvCode_.size() * sizeof(uint32_t); }
+    [[nodiscard]] size_t GetCodeSize() const { return spirvCode_.size() * sizeof(uint32_t); }
 
     // Create pipeline shader stage info
-    VkPipelineShaderStageCreateInfo create_stage_info(VkShaderStageFlagBits stage,
+    VkPipelineShaderStageCreateInfo CreateStageInfo(VkShaderStageFlagBits stage,
                                                     const char* entry_point = "main",
                                                     const VkSpecializationInfo* specialization_info = nullptr) const;
 
     // Static utility functions for loading shaders
-    static std::vector<uint32_t> load_spir_v_from_file(const std::string& filename);
-    static std::vector<uint32_t> compile_glsl_to_spir_v(const std::string& source,
+    static std::vector<uint32_t> LoadSpirVFromFile(const std::string& filename);
+    static std::vector<uint32_t> CompileGlslToSpirV(const std::string& source,
                                                     VkShaderStageFlagBits stage,
                                                     const std::string& filename = "shader");
 
     // Reflect shader information (requires SPIRV-Reflect or similar)
     struct ReflectionInfo {
-        std::vector<VkDescriptorSetLayoutBinding> descriptorSetBindings_;
-        std::vector<VkPushConstantRange> pushConstantRanges_;
-        std::vector<VkVertexInputAttributeDescription> inputAttributes_;
-        std::vector<VkVertexInputBindingDescription> inputBindings_;
+        std::vector<VkDescriptorSetLayoutBinding> descriptorSetBindings;
+        std::vector<VkPushConstantRange> pushConstantRanges;
+        std::vector<VkVertexInputAttributeDescription> inputAttributes;
+        std::vector<VkVertexInputBindingDescription> inputBindings;
     };
 
-    [[nodiscard]] ReflectionInfo reflect() const;
+    [[nodiscard]] ReflectionInfo Reflect() const;
 
 private:
     VkShaderModule shaderModule_{VK_NULL_HANDLE};
@@ -72,12 +72,12 @@ private:
     std::vector<uint32_t> spirvCode_;
 
     // Helper methods
-    void create_shader_module(const std::vector<uint32_t>& code);
-    void cleanup();
+    void CreateShaderModule(const std::vector<uint32_t>& code);
+    void Cleanup();
     
     // Validation helpers
-    static bool validate_spir_v(const std::vector<uint32_t>& spirv_code);
-    static VkShaderStageFlagBits infer_stage_from_filename(const std::string& filename);
+    static bool ValidateSpirV(const std::vector<uint32_t>& spirv_code);
+    static VkShaderStageFlagBits InferStageFromFilename(const std::string& filename);
 };
 
 } // namespace VulkanEngine::RAII

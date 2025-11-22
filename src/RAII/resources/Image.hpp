@@ -61,27 +61,27 @@ public:
     Image(const Image&) = delete;
     Image& operator=(const Image&) = delete;
 
-    [[nodiscard]] VkImage get_handle() const { return image_; }
+    [[nodiscard]] VkImage GetHandle() const { return image_; }
     
     // Implicit conversion to VkImage
     operator VkImage() const { return image_; }
 
     // Check if the image is valid
-    [[nodiscard]] bool is_valid() const { return image_ != VK_NULL_HANDLE; }
+    [[nodiscard]] bool IsValid() const { return image_ != VK_NULL_HANDLE; }
 
     // Get image properties
-    [[nodiscard]] uint32_t get_width() const { return width_; }
-    [[nodiscard]] uint32_t get_height() const { return height_; }
-    [[nodiscard]] uint32_t get_depth() const { return depth_; }
-    [[nodiscard]] uint32_t get_mip_levels() const { return mipLevels_; }
-    [[nodiscard]] uint32_t get_array_layers() const { return arrayLayers_; }
-    [[nodiscard]] VkFormat get_format() const { return format_; }
-    [[nodiscard]] VkImageType get_image_type() const { return imageType_; }
-    [[nodiscard]] VkImageUsageFlags get_usage() const { return usage_; }
-    [[nodiscard]] VkSampleCountFlagBits get_samples() const { return samples_; }
+    [[nodiscard]] uint32_t GetWidth() const { return width_; }
+    [[nodiscard]] uint32_t GetHeight() const { return height_; }
+    [[nodiscard]] uint32_t GetDepth() const { return depth_; }
+    [[nodiscard]] uint32_t GetMipLevels() const { return mipLevels_; }
+    [[nodiscard]] uint32_t GetArrayLayers() const { return arrayLayers_; }
+    [[nodiscard]] VkFormat GetFormat() const { return format_; }
+    [[nodiscard]] VkImageType GetImageType() const { return imageType_; }
+    [[nodiscard]] VkImageUsageFlags GetUsage() const { return usage_; }
+    [[nodiscard]] VkSampleCountFlagBits GetSamples() const { return samples_; }
 
     // Create image view
-    [[nodiscard]] VkImageView create_image_view(VkImageViewType view_type = VK_IMAGE_VIEW_TYPE_2D,
+    [[nodiscard]] VkImageView CreateImageView(VkImageViewType view_type = VK_IMAGE_VIEW_TYPE_2D,
                                VkImageAspectFlags aspect_flags = VK_IMAGE_ASPECT_COLOR_BIT,
                                uint32_t base_mip_level = 0,
                                uint32_t level_count = VK_REMAINING_MIP_LEVELS,
@@ -89,7 +89,7 @@ public:
                                uint32_t layer_count = VK_REMAINING_ARRAY_LAYERS) const;
 
     // Transition image layout
-    void transition_layout(VkImageLayout old_layout,
+    void TransitionLayout(VkImageLayout old_layout,
                          VkImageLayout new_layout,
                          VkImageAspectFlags aspect_flags = VK_IMAGE_ASPECT_COLOR_BIT,
                          uint32_t base_mip_level = 0,
@@ -99,21 +99,21 @@ public:
                          VkCommandBuffer cmd = VK_NULL_HANDLE);
 
     // Copy from buffer
-    void copy_from_buffer(VkBuffer buffer,
+    void CopyFromBuffer(VkBuffer buffer,
                        const std::vector<VkBufferImageCopy>& regions);
 
     // Copy to buffer
-    void copy_to_buffer(VkBuffer buffer,
+    void CopyToBuffer(VkBuffer buffer,
                      const std::vector<VkBufferImageCopy>& regions);
 
     // Generate mipmaps
-    void generate_mipmaps(VkFilter filter = VK_FILTER_LINEAR);
+    void GenerateMipmaps(VkFilter filter = VK_FILTER_LINEAR);
 
     // Get memory requirements
-    [[nodiscard]] VkMemoryRequirements get_memory_requirements() const;
+    [[nodiscard]] VkMemoryRequirements GetMemoryRequirements() const;
 
     // Get device memory (for traditional Vulkan)
-    [[nodiscard]] VkDeviceMemory get_memory() const { return memory_; }
+    [[nodiscard]] VkDeviceMemory GetMemory() const { return memory_; }
 
 private:
     VkImage image_{VK_NULL_HANDLE};
@@ -143,9 +143,9 @@ private:
     bool ownsImage_{true}; // Whether we created the image or just wrap it
 
     // Helper methods
-    void create_image();
-    void allocate_memory(VkMemoryPropertyFlags properties);
-    void cleanup();
+    void CreateImage();
+    void AllocateMemory(VkMemoryPropertyFlags properties);
+    void Cleanup();
 };
 
 } // namespace VulkanEngine::RAII

@@ -14,9 +14,9 @@ class Device; // Forward declaration
 class Surface; // Forward declaration
 
 struct SwapchainSupportDetails {
-    VkSurfaceCapabilitiesKHR capabilities_;
-    std::vector<VkSurfaceFormatKHR> formats_;
-    std::vector<VkPresentModeKHR> presentModes_;
+    VkSurfaceCapabilitiesKHR capabilities;
+    std::vector<VkSurfaceFormatKHR> formats;
+    std::vector<VkPresentModeKHR> presentModes;
 };
 
 class Swapchain {
@@ -47,45 +47,45 @@ public:
     Swapchain(const Swapchain&) = delete;
     Swapchain& operator=(const Swapchain&) = delete;
 
-    [[nodiscard]] VkSwapchainKHR get_handle() const { return swapchain_; }
+    [[nodiscard]] VkSwapchainKHR GetHandle() const { return swapchain_; }
     
     // Implicit conversion to VkSwapchainKHR
     operator VkSwapchainKHR() const { return swapchain_; }
 
     // Check if the swapchain is valid
-    [[nodiscard]] bool is_valid() const { return swapchain_ != VK_NULL_HANDLE; }
+    [[nodiscard]] bool IsValid() const { return swapchain_ != VK_NULL_HANDLE; }
 
     // Get swapchain images
-    [[nodiscard]] std::vector<VkImage> get_images() const;
+    [[nodiscard]] std::vector<VkImage> GetImages() const;
 
     // Get swapchain image views
-    [[nodiscard]] const std::vector<VkImageView>& get_image_views() const { return imageViews_; }
+    [[nodiscard]] const std::vector<VkImageView>& GetImageViews() const { return imageViews_; }
 
     // Get swapchain format
-    [[nodiscard]] VkFormat get_image_format() const { return imageFormat_; }
+    [[nodiscard]] VkFormat GetImageFormat() const { return imageFormat_; }
 
     // Get swapchain extent
-    [[nodiscard]] VkExtent2D get_extent() const { return extent_; }
+    [[nodiscard]] VkExtent2D GetExtent() const { return extent_; }
 
     // Get image count
-    [[nodiscard]] uint32_t get_image_count() const { return static_cast<uint32_t>(imageViews_.size()); }
+    [[nodiscard]] uint32_t GetImageCount() const { return static_cast<uint32_t>(imageViews_.size()); }
 
     // Acquire next image
-    VkResult acquire_next_image(uint64_t timeout, VkSemaphore semaphore, VkFence fence, uint32_t& image_index) const;
+    VkResult AcquireNextImage(uint64_t timeout, VkSemaphore semaphore, VkFence fence, uint32_t& image_index) const;
 
     // Present image
-    VkResult present(const std::vector<VkSemaphore>& wait_semaphores, uint32_t image_index, VkQueue present_queue) const;
+    VkResult Present(const std::vector<VkSemaphore>& wait_semaphores, uint32_t image_index, VkQueue present_queue) const;
 
     // SDL2-specific recreate method that gets size from window
-    void recreate(SDL_Window* window = nullptr);
+    void Recreate(SDL_Window* window = nullptr);
 
-    void recreate(uint32_t width, uint32_t height);
+    void Recreate(uint32_t width, uint32_t height);
 
     // Check if recreate is needed (e.g., window was resized)
-    [[nodiscard]] bool needs_recreate() const { return needsRecreate_; }
+    [[nodiscard]] bool NeedsRecreate() const { return needsRecreate_; }
 
     // Mark swapchain as needing recreation (call this on window events)
-    void mark_for_recreation() { needsRecreate_ = true; }
+    void MarkForRecreation() { needsRecreate_ = true; }
 
 private:
     VkSwapchainKHR swapchain_{VK_NULL_HANDLE};
@@ -103,14 +103,14 @@ private:
     bool needsRecreate_{false};
 
     // Helper methods
-    void create_swapchain(uint32_t width, uint32_t height);
-    void create_image_views();
-    void cleanup();
+    void CreateSwapchain(uint32_t width, uint32_t height);
+    void CreateImageViews();
+    void Cleanup();
     
-    SwapchainSupportDetails query_swapchain_support(VkPhysicalDevice physical_device) const;
-    [[nodiscard]] VkSurfaceFormatKHR choose_swap_surface_format(const std::vector<VkSurfaceFormatKHR>& available_formats) const;
-    [[nodiscard]] VkPresentModeKHR choose_swap_present_mode(const std::vector<VkPresentModeKHR>& available_present_modes) const;
-    [[nodiscard]] VkExtent2D choose_swap_extent(const VkSurfaceCapabilitiesKHR& capabilities, uint32_t width, uint32_t height) const;
+    SwapchainSupportDetails QuerySwapchainSupport(VkPhysicalDevice physical_device) const;
+    [[nodiscard]] VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& available_formats) const;
+    [[nodiscard]] VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& available_present_modes) const;
+    [[nodiscard]] VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, uint32_t width, uint32_t height) const;
 };
 
 } // namespace VulkanEngine::RAII

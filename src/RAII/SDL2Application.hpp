@@ -8,6 +8,8 @@
 #include <cstdint>
 #include <queue>
 
+#include "utils/CapabilityUtils.hpp"
+
 // Forward declare SDL types
 struct SDL_Window;
 union SDL_Event;
@@ -31,31 +33,32 @@ class SDLWindow;
 
 // Configuration structure for SDL Vulkan application
 struct SDLApplicationConfig {
-    std::string windowTitle_ = "Vulkan Engine Application";
-    int windowWidth_ = 1280;
-    int windowHeight_ = 720;
-    int windowX_ = -1; // SDL_WINDOWPOS_CENTERED
-    int windowY_ = -1; // SDL_WINDOWPOS_CENTERED
-    uint32_t windowFlags_ = 0; // Defaults to a resizable Vulkan window when left at 0
+    std::string windowTitle = "Vulkan Engine Application";
+    int windowWidth = 1280;
+    int windowHeight = 720;
+    int windowX = -1; // SDL_WINDOWPOS_CENTERED
+    int windowY = -1; // SDL_WINDOWPOS_CENTERED
+    uint32_t windowFlags = 0; // Defaults to a resizable Vulkan window when left at 0
     
-    bool enableValidation_ = true;
-    bool enableVSync_ = true;
-    uint32_t maxFramesInFlight_ = 3;
+    bool enableValidation = true;
+    bool enableVSync = true;
+    uint32_t maxFramesInFlight = 3;
 
-    std::vector<const char*> validationLayers_ = {}; // Custom validation layers (if empty, default ones will be used)
-    std::vector<const char*> instanceExtensions_ = {}; // Additional instance extensions to enable
-    std::vector<const char*> deviceExtensions_ = {}; // Additional device extensions to enable
-    VkPhysicalDeviceFeatures requiredDeviceFeatures_ = {}; // Required physical device features
+    std::vector<Utils::NamedCapabilityRequest> validationLayers = {}; // Custom validation layers (if empty, default ones will be used)
+    std::vector<Utils::NamedCapabilityRequest> instanceExtensions = {}; // Additional instance extensions to enable
+    std::vector<Utils::NamedCapabilityRequest> deviceExtensions = {}; // Additional device extensions to enable
+    VkPhysicalDeviceFeatures requiredDeviceFeatures = {}; // Required physical device features
+    VkPhysicalDeviceFeatures optionalDeviceFeatures = {}; // Optional physical device features
     
     // Optional application callbacks
-    std::function<void(double delta_time)> updateCallback_;
-    std::function<void()> renderCallback_;
-    std::function<void(const SDL_Event&)> eventCallback_;
-    std::function<void()> initCallback_;
-    std::function<void()> cleanupCallback_;
-    std::function<void(int width, int height)> resizeCallback_;
+    std::function<void(double delta_time)> updateCallback;
+    std::function<void()> renderCallback;
+    std::function<void(const SDL_Event&)> eventCallback;
+    std::function<void()> initCallback;
+    std::function<void()> cleanupCallback;
+    std::function<void(int width, int height)> resizeCallback;
 
-    uint16_t frame_time_sample_count_ = 120; // number of frames to average for frame time calculation
+    uint16_t frame_time_sample_count = 120; // number of frames to average for frame time calculation
 };
 
 // High-level SDL + Vulkan application class
@@ -73,62 +76,63 @@ public:
     SDLApplication& operator=(SDLApplication&& other) noexcept;
 
     // Initialize the application
-    bool initialize();
+    bool Initialize();
 
     // Run the application main loop
-    void run();
+    void Run();
 
     // Shutdown the application
-    void shutdown();
+    void Shutdown();
 
     // Check if application is running
-    [[nodiscard]] bool is_running() const { return running_; }
+    [[nodiscard]] bool IsRunning() const { return running_; }
 
     // Request application exit
-    void request_exit() { running_ = false; }
+    void RequestExit() { running_ = false; }
 
     // Access to underlying Vulkan objects
-    [[nodiscard]] Instance* get_instance() const { return instance_.get(); }
-    [[nodiscard]] PhysicalDevice* get_physical_device() const { return physicalDevice_.get(); }
-    [[nodiscard]] Device* get_device() const { return device_.get(); }
-    [[nodiscard]] Surface* get_surface() const { return surface_.get(); }
-    [[nodiscard]] Swapchain* get_swapchain() const { return swapchain_.get(); }
-    [[nodiscard]] RenderPass* get_render_pass() const { return renderPass_.get(); }
-    [[nodiscard]] Renderer* get_renderer() const { return renderer_.get(); }
+    [[nodiscard]] Instance* GetInstance() const { return instance_.get(); }
+    [[nodiscard]] PhysicalDevice* GetPhysicalDevice() const { return physicalDevice_.get(); }
+    [[nodiscard]] Device* GetDevice() const { return device_.get(); }
+    [[nodiscard]] Surface* GetSurface() const { return surface_.get(); }
+    [[nodiscard]] Swapchain* GetSwapchain() const { return swapchain_.get(); }
+    [[nodiscard]] RenderPass* GetRenderPass() const { return renderPass_.get(); }
+    [[nodiscard]] Renderer* GetRenderer() const { return renderer_.get(); }
 
     // Read-only access to configuration (for derived classes/utilities)
-    [[nodiscard]] const SDLApplicationConfig& get_config() const { return config_; }
+    [[nodiscard]] const SDLApplicationConfig& GetConfig() const { return config_; }
 
     // Access to SDL objects
-    [[nodiscard]] SDL_Window* get_window() const;
+    [[nodiscard]] SDL_Window* GetWindow() const;
 
     // Window management
-    void get_window_size(int* width, int* height) const;
-    void get_drawable_size(int* width, int* height) const;
-    void set_window_title(const char* title);
+    void GetWindowSize(int* width, int* height) const;
+    void GetDrawableSize(int* width, int* height) const;
+    void SetWindowTitle(const char* title);
 
     // Frame timing
-    [[nodiscard]] double get_delta_time() const { return deltaTime_; }
-    [[nodiscard]] double get_last_fps() const { return 1.0 / deltaTime_; } // return the fps extrapolated from a single frame via delta time.
-    [[nodiscard]] uint64_t get_frame_count() const { return frameCount_; }
-    [[nodiscard]] inline double get_average_frame_time() const { return current_frame_sum_ / static_cast<double>(frame_times_.size()); }; // average frame time over last 120 frames in seconds
+    [[nodiscard]] double GetDeltaTime() const { return deltaTime_; }
+    [[nodiscard]] double GetLastFps() const { return 1.0 / deltaTime_; } // return the fps extrapolated from a single frame via delta time.
+    [[nodiscard]] uint64_t GetFrameCount() const { return frameCount_; }
+    [[nodiscard]] inline double GetAverageFrameTime() const { return current_frame_sum_ / static_cast<double>(frame_times_.size()); }; // average frame time over last 120 frames in seconds
 
     // Update configuration (some changes require restart)
-    void update_config(const SDLApplicationConfig& new_config);
+    void UpdateConfig(const SDLApplicationConfig& new_config);
 
 protected:
     // Virtual methods for customization
-    virtual bool on_initialize() { return true; }
-    virtual void on_update(double delta_time) {}
-    virtual void on_render() {}
-    virtual void on_event(const SDL_Event& event) {}
-    virtual void on_resize(int width, int height) {}
-    virtual void on_shutdown() {}
+    virtual bool OnInitialize() { return true; }
+    virtual void OnUpdate(double delta_time) {}
+    virtual void OnRender() {}
+    virtual void OnEvent(const SDL_Event& event) {}
+    virtual void OnResize(int width, int height) {}
+    virtual void OnShutdown() {}
 
     // Helper methods
-    virtual bool create_vulkan_objects();
-    virtual void create_render_pass();
-    virtual void handle_window_resize();
+    virtual bool CreateVulkanObjects();
+    virtual void CreateRenderPass();
+    void SetRenderPass(std::unique_ptr<RenderPass> render_pass);
+    virtual void HandleWindowResize();
 
 private:
     SDLApplicationConfig config_;
@@ -158,11 +162,11 @@ private:
     std::unique_ptr<Renderer> renderer_;
     
     // Internal methods
-    void process_events();
-    void update_timing();
+    void ProcessEvents();
+    void UpdateTiming();
     // bool recreate_swapchain();
-    void cleanup();
-    void shutdown_internal(bool call_callbacks);
+    void Cleanup();
+    void ShutdownInternal(bool call_callbacks);
 };
 
 } // namespace VulkanEngine::RAII

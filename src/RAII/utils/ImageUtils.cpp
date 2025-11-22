@@ -8,12 +8,12 @@
 
 namespace VulkanEngine::RAII::Utils {
 
-uint32_t ImageUtils::calculate_mip_levels(uint32_t width, uint32_t height, uint32_t depth) {
+uint32_t ImageUtils::CalculateMipLevels(uint32_t width, uint32_t height, uint32_t depth) {
     uint32_t max_dim = std::max({width, height, depth});
     return static_cast<uint32_t>(std::floor(std::log2(std::max(1u, max_dim)))) + 1;
 }
 
-VkImageAspectFlags ImageUtils::get_image_aspect_flags(VkFormat format) {
+VkImageAspectFlags ImageUtils::GetImageAspectFlags(VkFormat format) {
     switch (format) {
         case VK_FORMAT_D32_SFLOAT:
         case VK_FORMAT_D16_UNORM:
@@ -28,7 +28,7 @@ VkImageAspectFlags ImageUtils::get_image_aspect_flags(VkFormat format) {
     }
 }
 
-VkImageSubresourceRange ImageUtils::create_subresource_range(VkImageAspectFlags aspect_flags,
+VkImageSubresourceRange ImageUtils::CreateSubresourceRange(VkImageAspectFlags aspect_flags,
                                                             uint32_t base_mip_level,
                                                             uint32_t level_count,
                                                             uint32_t base_array_layer,
@@ -42,7 +42,7 @@ VkImageSubresourceRange ImageUtils::create_subresource_range(VkImageAspectFlags 
     return range;
 }
 
-VkBufferImageCopy ImageUtils::create_buffer_image_copy(uint32_t width,
+VkBufferImageCopy ImageUtils::CreateBufferImageCopy(uint32_t width,
                                                     uint32_t height,
                                                     VkImageAspectFlags aspect_flags,
                                                     uint32_t mip_level,
@@ -61,7 +61,7 @@ VkBufferImageCopy ImageUtils::create_buffer_image_copy(uint32_t width,
     return copy;
 }
 
-VkImageCopy ImageUtils::create_image_copy(const VkImageSubresourceLayers& src_subresource,
+VkImageCopy ImageUtils::CreateImageCopy(const VkImageSubresourceLayers& src_subresource,
                                          const VkOffset3D& src_offset,
                                          const VkImageSubresourceLayers& dst_subresource,
                                          const VkOffset3D& dst_offset,
@@ -75,7 +75,7 @@ VkImageCopy ImageUtils::create_image_copy(const VkImageSubresourceLayers& src_su
     return copy;
 }
 
-VkImageSubresourceLayers ImageUtils::create_subresource_layers(VkImageAspectFlags aspect_flags,
+VkImageSubresourceLayers ImageUtils::CreateSubresourceLayers(VkImageAspectFlags aspect_flags,
                                                              uint32_t mip_level,
                                                              uint32_t base_array_layer,
                                                              uint32_t layer_count) {
@@ -87,7 +87,7 @@ VkImageSubresourceLayers ImageUtils::create_subresource_layers(VkImageAspectFlag
     return layers;
 }
 
-VkDeviceSize ImageUtils::calculate_image_size(uint32_t width,
+VkDeviceSize ImageUtils::CalculateImageSize(uint32_t width,
                                             uint32_t height,
                                             uint32_t depth,
                                             uint32_t mip_levels,
@@ -108,7 +108,7 @@ VkDeviceSize ImageUtils::calculate_image_size(uint32_t width,
     return size;
 }
 
-void ImageUtils::get_mip_level_dimensions(uint32_t base_mip_width,
+void ImageUtils::GetMipLevelDimensions(uint32_t base_mip_width,
                                        uint32_t base_mip_height,
                                        uint32_t base_mip_depth,
                                        uint32_t mip_level,
@@ -120,13 +120,13 @@ void ImageUtils::get_mip_level_dimensions(uint32_t base_mip_width,
     mip_depth = std::max(1u, base_mip_depth >> mip_level);
 }
 
-bool ImageUtils::requires_optimal_tiling(VkImageUsageFlags usage) {
+bool ImageUtils::RequiresOptimalTiling(VkImageUsageFlags usage) {
     return (usage & (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
                      VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
                      VK_IMAGE_USAGE_STORAGE_BIT)) != 0;
 }
 
-VkImageViewType ImageUtils::get_compatible_view_type(VkImageType image_type, uint32_t array_layers) {
+VkImageViewType ImageUtils::GetCompatibleViewType(VkImageType image_type, uint32_t array_layers) {
     switch (image_type) {
         case VK_IMAGE_TYPE_1D:
             return array_layers > 1 ? VK_IMAGE_VIEW_TYPE_1D_ARRAY : VK_IMAGE_VIEW_TYPE_1D;
@@ -139,7 +139,7 @@ VkImageViewType ImageUtils::get_compatible_view_type(VkImageType image_type, uin
     }
 }
 
-VkImageViewCreateInfo ImageUtils::create_image_view_create_info(VkImage image,
+VkImageViewCreateInfo ImageUtils::CreateImageViewCreateInfo(VkImage image,
                                                             VkImageViewType view_type,
                                                             VkFormat format,
                                                             VkImageAspectFlags aspect_flags,
@@ -151,7 +151,7 @@ VkImageViewCreateInfo ImageUtils::create_image_view_create_info(VkImage image,
     view_info.image = image;
     view_info.viewType = view_type;
     view_info.format = format;
-    view_info.subresourceRange = create_subresource_range(aspect_flags,
+    view_info.subresourceRange = CreateSubresourceRange(aspect_flags,
                                                        base_mip_level,
                                                        level_count,
                                                        base_array_layer,
@@ -159,7 +159,7 @@ VkImageViewCreateInfo ImageUtils::create_image_view_create_info(VkImage image,
     return view_info;
 }
 
-VkImageMemoryBarrier ImageUtils::create_image_memory_barrier(VkImage image,
+VkImageMemoryBarrier ImageUtils::CreateImageMemoryBarrier(VkImage image,
                                                           VkImageLayout old_layout,
                                                           VkImageLayout new_layout,
                                                           VkImageAspectFlags aspect_flags,
@@ -175,7 +175,7 @@ VkImageMemoryBarrier ImageUtils::create_image_memory_barrier(VkImage image,
     barrier.srcQueueFamilyIndex = src_queue_family_index;
     barrier.dstQueueFamilyIndex = dst_queue_family_index;
     barrier.image = image;
-    barrier.subresourceRange = create_subresource_range(aspect_flags,
+    barrier.subresourceRange = CreateSubresourceRange(aspect_flags,
                                                       base_mip_level,
                                                       level_count,
                                                       base_array_layer,
@@ -183,7 +183,7 @@ VkImageMemoryBarrier ImageUtils::create_image_memory_barrier(VkImage image,
     return barrier;
 }
 
-VkPipelineStageFlags ImageUtils::get_layout_pipeline_stage_flags(VkImageLayout layout, bool is_source) {
+VkPipelineStageFlags ImageUtils::GetLayoutPipelineStageFlags(VkImageLayout layout, bool is_source) {
     switch (layout) {
         case VK_IMAGE_LAYOUT_UNDEFINED:
             return is_source ? VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT : VK_PIPELINE_STAGE_TRANSFER_BIT;
@@ -201,7 +201,7 @@ VkPipelineStageFlags ImageUtils::get_layout_pipeline_stage_flags(VkImageLayout l
     }
 }
 
-VkAccessFlags ImageUtils::get_layout_access_flags(VkImageLayout layout) {
+VkAccessFlags ImageUtils::GetLayoutAccessFlags(VkImageLayout layout) {
     switch (layout) {
         case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
             return VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -218,7 +218,7 @@ VkAccessFlags ImageUtils::get_layout_access_flags(VkImageLayout layout) {
     }
 }
 
-void ImageUtils::cmd_transition_image_layout(VkCommandBuffer cmd,
+void ImageUtils::CmdTransitionImageLayout(VkCommandBuffer cmd,
                                              VkImage image,
                                              VkImageLayout old_layout,
                                              VkImageLayout new_layout,
@@ -227,7 +227,7 @@ void ImageUtils::cmd_transition_image_layout(VkCommandBuffer cmd,
                                              uint32_t level_count,
                                              uint32_t base_array_layer,
                                              uint32_t layer_count) {
-    VkImageMemoryBarrier barrier = create_image_memory_barrier(image,
+    VkImageMemoryBarrier barrier = CreateImageMemoryBarrier(image,
                                                                old_layout,
                                                                new_layout,
                                                                aspect_flags,
@@ -235,10 +235,10 @@ void ImageUtils::cmd_transition_image_layout(VkCommandBuffer cmd,
                                                                level_count,
                                                                base_array_layer,
                                                                layer_count);
-    barrier.srcAccessMask = get_layout_access_flags(old_layout);
-    barrier.dstAccessMask = get_layout_access_flags(new_layout);
-    VkPipelineStageFlags src_stage = get_layout_pipeline_stage_flags(old_layout, /*is_source*/true);
-    VkPipelineStageFlags dst_stage = get_layout_pipeline_stage_flags(new_layout, /*is_source*/false);
+    barrier.srcAccessMask = GetLayoutAccessFlags(old_layout);
+    barrier.dstAccessMask = GetLayoutAccessFlags(new_layout);
+    VkPipelineStageFlags src_stage = GetLayoutPipelineStageFlags(old_layout, /*is_source*/true);
+    VkPipelineStageFlags dst_stage = GetLayoutPipelineStageFlags(new_layout, /*is_source*/false);
     vkCmdPipelineBarrier(cmd,
                          src_stage, dst_stage,
                          0,
@@ -247,7 +247,7 @@ void ImageUtils::cmd_transition_image_layout(VkCommandBuffer cmd,
                          1, &barrier);
 }
 
-void ImageUtils::cmd_copy_buffer_to_image(VkCommandBuffer cmd,
+void ImageUtils::CmdCopyBufferToImage(VkCommandBuffer cmd,
                                           VkBuffer src_buffer,
                                           VkImage dst_image,
                                           uint32_t width,
@@ -257,7 +257,7 @@ void ImageUtils::cmd_copy_buffer_to_image(VkCommandBuffer cmd,
                                           uint32_t mip_level,
                                           uint32_t array_layer,
                                           VkDeviceSize buffer_offset) {
-    VkBufferImageCopy region = create_buffer_image_copy(width, height, aspect_flags, mip_level, array_layer, buffer_offset);
+    VkBufferImageCopy region = CreateBufferImageCopy(width, height, aspect_flags, mip_level, array_layer, buffer_offset);
     vkCmdCopyBufferToImage(cmd, src_buffer, dst_image, dst_layout, 1, &region);
 }
 

@@ -10,12 +10,12 @@ namespace VulkanEngine::RAII {
 CommandPool::CommandPool(const Device& device,
                          uint32_t queue_family_index,
                          VkCommandPoolCreateFlags flags)
-    : device_(device.get_handle()), queueFamilyIndex_(queue_family_index) {
-    create_command_pool(flags);
+    : device_(device.GetHandle()), queueFamilyIndex_(queue_family_index) {
+    CreateCommandPool(flags);
 }
 
 CommandPool::~CommandPool() {
-    cleanup();
+    Cleanup();
 }
 
 CommandPool::CommandPool(CommandPool&& other) noexcept
@@ -29,7 +29,7 @@ CommandPool::CommandPool(CommandPool&& other) noexcept
 
 CommandPool& CommandPool::operator=(CommandPool&& other) noexcept {
     if (this != &other) {
-        cleanup();
+        Cleanup();
         commandPool_ = other.commandPool_;
         device_ = other.device_;
         queueFamilyIndex_ = other.queueFamilyIndex_;
@@ -40,7 +40,7 @@ CommandPool& CommandPool::operator=(CommandPool&& other) noexcept {
     return *this;
 }
 
-std::vector<VkCommandBuffer> CommandPool::allocate_command_buffers(uint32_t count,
+std::vector<VkCommandBuffer> CommandPool::AllocateCommandBuffers(uint32_t count,
                                                                  VkCommandBufferLevel level) const {
     VkCommandBufferAllocateInfo alloc_info{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
     alloc_info.commandPool = commandPool_;
@@ -54,34 +54,34 @@ std::vector<VkCommandBuffer> CommandPool::allocate_command_buffers(uint32_t coun
     return command_buffers;
 }
 
-VkCommandBuffer CommandPool::allocate_command_buffer(VkCommandBufferLevel level) const {
-    auto buffers = allocate_command_buffers(1, level);
+VkCommandBuffer CommandPool::AllocateCommandBuffer(VkCommandBufferLevel level) const {
+    auto buffers = AllocateCommandBuffers(1, level);
     return buffers.front();
 }
 
-void CommandPool::free_command_buffers(const std::vector<VkCommandBuffer>& command_buffers) const {
+void CommandPool::FreeCommandBuffers(const std::vector<VkCommandBuffer>& command_buffers) const {
     if (!command_buffers.empty()) {
         vkFreeCommandBuffers(device_, commandPool_, static_cast<uint32_t>(command_buffers.size()), command_buffers.data());
     }
 }
 
-void CommandPool::free_command_buffer(VkCommandBuffer command_buffer) const {
+void CommandPool::FreeCommandBuffer(VkCommandBuffer command_buffer) const {
     if (command_buffer != VK_NULL_HANDLE) {
         vkFreeCommandBuffers(device_, commandPool_, 1, &command_buffer);
     }
 }
 
-void CommandPool::reset(VkCommandPoolResetFlags flags) const {
+void CommandPool::Reset(VkCommandPoolResetFlags flags) const {
     vkResetCommandPool(device_, commandPool_, flags);
 }
 
-void CommandPool::trim(VkCommandPoolTrimFlags flags) const {
+void CommandPool::Trim(VkCommandPoolTrimFlags flags) const {
     if (vkTrimCommandPool) {
         vkTrimCommandPool(device_, commandPool_, flags);
     }
 }
 
-void CommandPool::create_command_pool(VkCommandPoolCreateFlags flags) {
+void CommandPool::CreateCommandPool(VkCommandPoolCreateFlags flags) {
     VkCommandPoolCreateInfo pool_info{VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO};
     pool_info.queueFamilyIndex = queueFamilyIndex_;
     pool_info.flags = flags;
@@ -91,7 +91,7 @@ void CommandPool::create_command_pool(VkCommandPoolCreateFlags flags) {
     }
 }
 
-void CommandPool::cleanup() {
+void CommandPool::Cleanup() {
     if (commandPool_ != VK_NULL_HANDLE) {
         vkDestroyCommandPool(device_, commandPool_, nullptr);
         commandPool_ = VK_NULL_HANDLE;

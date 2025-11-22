@@ -24,36 +24,36 @@ public:
     Event(const Event&) = delete;
     Event& operator=(const Event&) = delete;
 
-    [[nodiscard]] VkEvent get_handle() const { return event_; }
+    [[nodiscard]] VkEvent GetHandle() const { return event_; }
     
     // Implicit conversion to VkEvent
     operator VkEvent() const { return event_; }
 
     // Check if the event is valid
-    [[nodiscard]] bool is_valid() const { return event_ != VK_NULL_HANDLE; }
+    [[nodiscard]] bool IsValid() const { return event_ != VK_NULL_HANDLE; }
 
     // Set event to signaled state
-    [[nodiscard]] VkResult set() const;
+    [[nodiscard]] VkResult Set() const;
 
     // Reset event to unsignaled state
-    [[nodiscard]] VkResult reset() const;
+    [[nodiscard]] VkResult Reset() const;
 
     // Get event status (signaled or unsignaled)
-    [[nodiscard]] VkResult get_status() const;
+    [[nodiscard]] VkResult GetStatus() const;
 
     // Check if event is signaled
-    [[nodiscard]] bool is_signaled() const;
+    [[nodiscard]] bool IsSignaled() const;
 
     // Check if event is unsignaled
-    [[nodiscard]] bool is_unsignaled() const;
+    [[nodiscard]] bool IsUnsignaled() const;
 
 private:
     VkEvent event_{VK_NULL_HANDLE};
     VkDevice device_{VK_NULL_HANDLE}; // Reference to device
 
     // Helper methods
-    void create_event(VkEventCreateFlags flags);
-    void cleanup();
+    void CreateEvent(VkEventCreateFlags flags);
+    void Cleanup();
 };
 
 } // namespace VulkanEngine::RAII

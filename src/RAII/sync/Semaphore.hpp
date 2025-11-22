@@ -28,35 +28,35 @@ public:
     Semaphore(const Semaphore&) = delete;
     Semaphore& operator=(const Semaphore&) = delete;
 
-    [[nodiscard]] VkSemaphore get_handle() const { return semaphore_; }
+    [[nodiscard]] VkSemaphore GetHandle() const { return semaphore_; }
     
     // Implicit conversion to VkSemaphore
     operator VkSemaphore() const { return semaphore_; }
 
     // Check if the semaphore is valid
-    [[nodiscard]] bool is_valid() const { return semaphore_ != VK_NULL_HANDLE; }
+    [[nodiscard]] bool IsValid() const { return semaphore_ != VK_NULL_HANDLE; }
 
     // Timeline semaphore operations (if supported)
-    [[nodiscard]] bool is_timeline_semaphore() const { return isTimelineSemaphore_; }
+    [[nodiscard]] bool IsTimelineSemaphore() const { return isTimelineSemaphore_; }
 
     // Get counter value (timeline semaphore only)
-    [[nodiscard]] uint64_t get_counter_value() const;
+    [[nodiscard]] uint64_t GetCounterValue() const;
 
     // Wait for timeline semaphore to reach value
-    [[nodiscard]] VkResult wait(uint64_t value, uint64_t timeout = UINT64_MAX) const;
+    [[nodiscard]] VkResult Wait(uint64_t value, uint64_t timeout = UINT64_MAX) const;
 
     // Signal timeline semaphore to value
-    [[nodiscard]] VkResult signal(uint64_t value) const;
+    [[nodiscard]] VkResult Signal(uint64_t value) const;
 
     // Wait for multiple timeline semaphores
-    static VkResult wait_semaphores(const Device& device,
+    static VkResult WaitSemaphores(const Device& device,
                                   const std::vector<VkSemaphore>& semaphores,
                                   const std::vector<uint64_t>& values,
                                   bool wait_all = true,
                                   uint64_t timeout = UINT64_MAX);
 
     // Signal multiple timeline semaphores
-    static VkResult signal_semaphores(const Device& device,
+    static VkResult SignalSemaphores(const Device& device,
                                     const std::vector<VkSemaphore>& semaphores,
                                     const std::vector<uint64_t>& values);
 
@@ -66,8 +66,8 @@ private:
     bool isTimelineSemaphore_{false};
 
     // Helper methods
-    void create_semaphore(VkSemaphoreCreateFlags flags, uint64_t* initial_value = nullptr);
-    void cleanup();
+    void CreateSemaphore(VkSemaphoreCreateFlags flags, uint64_t* initial_value = nullptr);
+    void Cleanup();
 };
 
 } // namespace VulkanEngine::RAII

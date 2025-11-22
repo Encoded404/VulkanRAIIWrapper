@@ -30,24 +30,24 @@ public:
     Framebuffer(const Framebuffer&) = delete;
     Framebuffer& operator=(const Framebuffer&) = delete;
 
-    [[nodiscard]] VkFramebuffer get_handle() const { return framebuffer_; }
+    [[nodiscard]] VkFramebuffer GetHandle() const { return framebuffer_; }
     
     // Implicit conversion to VkFramebuffer
     operator VkFramebuffer() const { return framebuffer_; }
 
     // Check if the framebuffer is valid
-    [[nodiscard]] bool is_valid() const { return framebuffer_ != VK_NULL_HANDLE; }
+    [[nodiscard]] bool IsValid() const { return framebuffer_ != VK_NULL_HANDLE; }
 
     // Get framebuffer dimensions
-    [[nodiscard]] uint32_t get_width() const { return width_; }
-    [[nodiscard]] uint32_t get_height() const { return height_; }
-    [[nodiscard]] uint32_t get_layers() const { return layers_; }
+    [[nodiscard]] uint32_t GetWidth() const { return width_; }
+    [[nodiscard]] uint32_t GetHeight() const { return height_; }
+    [[nodiscard]] uint32_t GetLayers() const { return layers_; }
 
     // Get attachment count
-    [[nodiscard]] uint32_t get_attachment_count() const { return static_cast<uint32_t>(attachments_.size()); }
+    [[nodiscard]] uint32_t GetAttachmentCount() const { return static_cast<uint32_t>(attachments_.size()); }
 
     // Get attachments
-    [[nodiscard]] const std::vector<VkImageView>& get_attachments() const { return attachments_; }
+    [[nodiscard]] const std::vector<VkImageView>& GetAttachments() const { return attachments_; }
 
 private:
     VkFramebuffer framebuffer_{VK_NULL_HANDLE};
@@ -60,8 +60,8 @@ private:
     uint32_t layers_{1};
 
     // Helper methods
-    void create_framebuffer();
-    void cleanup();
+    void CreateFramebuffer();
+    void Cleanup();
 };
 
 } // namespace VulkanEngine::RAII

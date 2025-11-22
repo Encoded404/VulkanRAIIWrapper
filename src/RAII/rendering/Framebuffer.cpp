@@ -17,8 +17,8 @@ Framebuffer::Framebuffer(const Device& device,
                          uint32_t width,
                          uint32_t height,
                          uint32_t layers)
-    : device_(device.get_handle()),
-      renderPass_(render_pass.get_handle()),
+    : device_(device.GetHandle()),
+      renderPass_(render_pass.GetHandle()),
       attachments_(attachments),
       width_(width),
       height_(height),
@@ -33,11 +33,11 @@ Framebuffer::Framebuffer(const Device& device,
         throw std::invalid_argument("Framebuffer dimensions must be greater than zero");
     }
 
-    create_framebuffer();
+    CreateFramebuffer();
 }
 
 Framebuffer::~Framebuffer() {
-    cleanup();
+    Cleanup();
 }
 
 Framebuffer::Framebuffer(Framebuffer&& other) noexcept
@@ -58,7 +58,7 @@ Framebuffer::Framebuffer(Framebuffer&& other) noexcept
 
 Framebuffer& Framebuffer::operator=(Framebuffer&& other) noexcept {
     if (this != &other) {
-        cleanup();
+        Cleanup();
         framebuffer_ = other.framebuffer_;
         device_ = other.device_;
         renderPass_ = other.renderPass_;
@@ -77,7 +77,7 @@ Framebuffer& Framebuffer::operator=(Framebuffer&& other) noexcept {
     return *this;
 }
 
-void Framebuffer::create_framebuffer() {
+void Framebuffer::CreateFramebuffer() {
     VkFramebufferCreateInfo framebuffer_info{VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO};
     framebuffer_info.renderPass = renderPass_;
     framebuffer_info.attachmentCount = static_cast<uint32_t>(attachments_.size());
@@ -91,7 +91,7 @@ void Framebuffer::create_framebuffer() {
     }
 }
 
-void Framebuffer::cleanup() {
+void Framebuffer::Cleanup() {
     if (framebuffer_ != VK_NULL_HANDLE) {
         vkDestroyFramebuffer(device_, framebuffer_, nullptr);
         framebuffer_ = VK_NULL_HANDLE;

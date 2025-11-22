@@ -19,7 +19,7 @@
 #include <vector>
 #include <limits>
 #include <iostream>
-
+#include <cstddef> // for std::size_t
 
 namespace VulkanEngine::RAII {
 
@@ -31,13 +31,13 @@ Renderer::Renderer(const Device& device,
             swapchain_(&swapchain),
       renderPass_(&render_pass),
       maxFramesInFlight_(std::max(1u, max_frames_in_flight)) {
-    create_command_objects();
-    create_sync_objects(swapchain.get_image_count());
-    create_framebuffers();
+    CreateCommandObjects();
+    CreateSyncObjects(swapchain.GetImageCount());
+    CreateFramebuffers();
 }
 
 Renderer::~Renderer() {
-    cleanup();
+    Cleanup();
 }
 
 Renderer::Renderer(Renderer&& other) noexcept
@@ -67,7 +67,7 @@ Renderer::Renderer(Renderer&& other) noexcept
 
 Renderer& Renderer::operator=(Renderer&& other) noexcept {
     if (this != &other) {
-        cleanup();
+        Cleanup();
         device_ = other.device_;
         swapchain_ = other.swapchain_;
         renderPass_ = other.renderPass_;
@@ -95,7 +95,7 @@ Renderer& Renderer::operator=(Renderer&& other) noexcept {
     return *this;
 }
 
-bool Renderer::begin_frame() {
+bool Renderer::BeginFrame() {
     if (frameInProgress_) {
         return false;
     }
@@ -105,14 +105,14 @@ bool Renderer::begin_frame() {
     }
 
     VulkanEngine::RAII::Fence& fence = *inFlightFences_[currentFrame_];
-    fence.wait();
+    fence.Wait();
     
-    VkResult result = swapchain_->acquire_next_image(std::numeric_limits<uint64_t>::max(),
+    VkResult result = swapchain_->AcquireNextImage(std::numeric_limits<uint64_t>::max(),
                                                     *imageAvailableSemaphores_[currentFrame_],
                                                     VK_NULL_HANDLE,
                                                     imageIndex_);
     
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || swapchain_->needs_recreate())
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || swapchain_->NeedsRecreate())
     {
         //lastRecreateTime_ = totalFrameCount_;
         //recreate();
@@ -125,23 +125,23 @@ bool Renderer::begin_frame() {
     }
 
     // only when we know we are going to do work, reset the fence
-    fence.reset();
+    fence.Reset();
     
     auto& command_buffer = *commandBuffers_[currentFrame_];
-    command_buffer.reset();
-    command_buffer.begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+    command_buffer.Reset();
+    command_buffer.Begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
     frameInProgress_ = true;
     return true;
 }
 
-bool Renderer::end_frame() {
+bool Renderer::EndFrame() {
     if (!frameInProgress_ || !device_ || !swapchain_) {
         return false;
     }
 
     auto& command_buffer = *commandBuffers_[currentFrame_];
-    command_buffer.end();
+    command_buffer.End();
 
     // Wait on the same semaphore we used for acquire in begin_frame (per-frame indexing)
     VkSemaphore wait_semaphores[] = {*imageAvailableSemaphores_[currentFrame_]};
@@ -154,12 +154,12 @@ bool Renderer::end_frame() {
     submit_info.pWaitSemaphores = wait_semaphores;
     submit_info.pWaitDstStageMask = wait_stages;
     submit_info.commandBufferCount = 1;
-    VkCommandBuffer raw_command_buffer = command_buffer.get_handle();
+    VkCommandBuffer raw_command_buffer = command_buffer.GetHandle();
     submit_info.pCommandBuffers = &raw_command_buffer;
     submit_info.signalSemaphoreCount = 1;
     submit_info.pSignalSemaphores = signal_semaphores;
 
-    VkQueue graphics_queue = device_->get_graphics_queue();
+    VkQueue graphics_queue = device_->GetGraphicsQueue();
     if (vkQueueSubmit(graphics_queue,
                       1,
                       &submit_info,
@@ -169,16 +169,16 @@ bool Renderer::end_frame() {
 
     // Present waits on the semaphore signaled by the submit above (per-image indexing)
     std::vector<VkSemaphore> wait_sem{*renderFinishedSemaphores_[imageIndex_]};
-    VkQueue present_queue = device_->get_present_queue();
-    VkResult present_result = swapchain_->present(wait_sem, imageIndex_, present_queue);
+    VkQueue present_queue = device_->GetPresentQueue();
+    VkResult present_result = swapchain_->Present(wait_sem, imageIndex_, present_queue);
 
-    // std::cout << "present_result: " << present_result << " needSwapchainRecreation_: " << needsSwapchainRecreation_ << " swapchain_->needs_recreate(): " << swapchain_->needs_recreate() << '\n';
-    if (present_result == VK_ERROR_OUT_OF_DATE_KHR || needsSwapchainRecreation_ || swapchain_->needs_recreate()) {
+    // std::cout << "present_result: " << present_result << " needSwapchainRecreation_: " << needsSwapchainRecreation_ << " swapchain_->needs_recreate(): " << swapchain_->NeedsRecreate() << '\n';
+    if (present_result == VK_ERROR_OUT_OF_DATE_KHR || needsSwapchainRecreation_ || swapchain_->NeedsRecreate()) {
         // the semaphores are still valid, no need to recreate them
         if(totalFrameCount_ - lastRecreateTime_ > 5)
         {
             lastRecreateTime_ = totalFrameCount_;
-            recreate(false);
+            Recreate(false);
             needsSwapchainRecreation_ = false;
         }
     } else if (present_result == VK_SUBOPTIMAL_KHR) {
@@ -187,7 +187,7 @@ bool Renderer::end_frame() {
         if(totalFrameCount_ - lastRecreateTime_ > 5)
         {
             lastRecreateTime_ = totalFrameCount_;
-            recreate(false);
+            Recreate(false);
             needsSwapchainRecreation_ = false;
         }
     } else if (present_result != VK_SUCCESS) {
@@ -200,33 +200,46 @@ bool Renderer::end_frame() {
     return !needsSwapchainRecreation_;
 }
 
-CommandBuffer& Renderer::get_current_command_buffer() {
+CommandBuffer& Renderer::GetCurrentCommandBuffer() {
     if (!frameInProgress_) {
         throw std::runtime_error("No frame in progress");
     }
     return *commandBuffers_[currentFrame_];
 }
 
-void Renderer::wait_idle() {
+void Renderer::WaitIdle() {
     if (device_) {
-        vkDeviceWaitIdle(device_->get_handle());
+        vkDeviceWaitIdle(device_->GetHandle());
     }
 }
 
-void Renderer::recreate(bool recreate_semaphores)
+void Renderer::SetExternalAttachments(std::vector<std::vector<VkImageView>> attachments) {
+    extraAttachments_ = std::move(attachments);
+}
+
+void Renderer::ClearExternalAttachments() {
+    extraAttachments_.clear();
+}
+
+void Renderer::RebuildFramebuffers() {
+    WaitIdle();
+    CreateFramebuffers();
+}
+
+void Renderer::Recreate(bool recreate_semaphores)
 {
-    wait_idle();
+    WaitIdle();
     // recreate swapchain
-    swapchain_->recreate();
+    swapchain_->Recreate();
     // recreate semaphore sync objects if requested
     if (recreate_semaphores) {
-        recreate_semaphore_sync_objects(swapchain_->get_image_count());
+        RecreateSemaphoreSyncObjects(swapchain_->GetImageCount());
     }
     // create new framebuffers
-    create_framebuffers();
+    CreateFramebuffers();
 }
 
-void Renderer::recreate_semaphore_sync_objects(uint32_t num_of_swapchain_images) {
+void Renderer::RecreateSemaphoreSyncObjects(uint32_t num_of_swapchain_images) {
     if (!device_ || !swapchain_) {
         std::cerr << "Renderer::recreate_semaphore_sync_objects called without valid device or swapchain" << '\n' << std::flush;
         return;
@@ -246,7 +259,7 @@ void Renderer::recreate_semaphore_sync_objects(uint32_t num_of_swapchain_images)
     }
 }
 
-void Renderer::create_sync_objects(uint32_t num_of_swapchain_images) {
+void Renderer::CreateSyncObjects(uint32_t num_of_swapchain_images) {
     imageAvailableSemaphores_.clear();
     renderFinishedSemaphores_.clear();
     inFlightFences_.clear();
@@ -264,12 +277,12 @@ void Renderer::create_sync_objects(uint32_t num_of_swapchain_images) {
     }
 }
 
-void Renderer::create_command_objects() {
+void Renderer::CreateCommandObjects() {
     if (!device_) {
         throw std::runtime_error("Renderer requires a valid device");
     }
 
-    auto indices = device_->get_queue_family_indices();
+    auto indices = device_->GetQueueFamilyIndices();
     if (!indices.graphicsFamily_.has_value()) {
         throw std::runtime_error("Renderer requires graphics queue family");
     }
@@ -288,7 +301,7 @@ void Renderer::create_command_objects() {
     }
 }
 
-void Renderer::create_framebuffers()
+void Renderer::CreateFramebuffers()
 {
     framebuffers_.clear();
 
@@ -296,12 +309,21 @@ void Renderer::create_framebuffers()
         return;
     }
 
-    const auto& image_views = swapchain_->get_image_views();
-    VkExtent2D extent = swapchain_->get_extent();
+    const auto& image_views = swapchain_->GetImageViews();
+    VkExtent2D extent = swapchain_->GetExtent();
+    bool include_extra = !extraAttachments_.empty() && extraAttachments_.size() == image_views.size();
+    if (!extraAttachments_.empty() && extraAttachments_.size() != image_views.size()) {
+        std::cerr << "Renderer::CreateFramebuffers: ignoring extra attachments due to size mismatch" << '\n';
+        include_extra = false;
+    }
 
     framebuffers_.reserve(image_views.size());
-    for (auto view : image_views) {
-        std::vector<VkImageView> attachments{view};
+    for (std::size_t i = 0; i < image_views.size(); ++i) {
+        std::vector<VkImageView> attachments{image_views[i]};
+        if (include_extra) {
+            const std::vector<VkImageView>& extras = extraAttachments_[i];
+            attachments.insert(attachments.end(), extras.begin(), extras.end());
+        }
         framebuffers_.push_back(std::make_unique<Framebuffer>(*device_,
                                                                *renderPass_,
                                                                attachments,
@@ -310,9 +332,9 @@ void Renderer::create_framebuffers()
     }
 }
 
-void Renderer::cleanup() {
+void Renderer::Cleanup() {
     if (device_) {
-        vkDeviceWaitIdle(device_->get_handle());
+        vkDeviceWaitIdle(device_->GetHandle());
     }
 
     framebuffers_.clear();
@@ -321,6 +343,7 @@ void Renderer::cleanup() {
     imageAvailableSemaphores_.clear();
     renderFinishedSemaphores_.clear();
     inFlightFences_.clear();
+    extraAttachments_.clear();
 
     device_ = nullptr;
     swapchain_ = nullptr;

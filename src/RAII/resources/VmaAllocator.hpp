@@ -31,70 +31,70 @@ public:
     VmaAllocator(const VmaAllocator&) = delete;
     VmaAllocator& operator=(const VmaAllocator&) = delete;
 
-    [[nodiscard]] ::VmaAllocator get_handle() const { return allocator_; }
+    [[nodiscard]] ::VmaAllocator GetHandle() const { return allocator_; }
     
     // Implicit conversion to VmaAllocator
     operator ::VmaAllocator() const { return allocator_; }
 
-    [[nodiscard]] VkDevice get_device() const { return device_; }
-    [[nodiscard]] const Device* get_device_ref() const { return deviceRef_; }
+    [[nodiscard]] VkDevice GetDevice() const { return device_; }
+    [[nodiscard]] const Device* GetDeviceRef() const { return deviceRef_; }
 
     // Check if the allocator is valid
-    [[nodiscard]] bool is_valid() const { return allocator_ != VK_NULL_HANDLE; }
+    [[nodiscard]] bool IsValid() const { return allocator_ != VK_NULL_HANDLE; }
 
     // Buffer allocation
-    VkResult create_buffer(const VkBufferCreateInfo& buffer_create_info,
+    VkResult CreateBuffer(const VkBufferCreateInfo& buffer_create_info,
                          const VmaAllocationCreateInfo& allocation_create_info,
                          VkBuffer& buffer,
                          VmaAllocation& allocation,
                          VmaAllocationInfo* allocation_info = nullptr) const;
 
-    void destroy_buffer(VkBuffer buffer, VmaAllocation allocation) const;
+    void DestroyBuffer(VkBuffer buffer, VmaAllocation allocation) const;
 
     // Image allocation
-    VkResult create_image(const VkImageCreateInfo& image_create_info,
+    VkResult CreateImage(const VkImageCreateInfo& image_create_info,
                         const VmaAllocationCreateInfo& allocation_create_info,
                         VkImage& image,
                         VmaAllocation& allocation,
                         VmaAllocationInfo* allocation_info = nullptr) const;
 
-    void destroy_image(VkImage image, VmaAllocation allocation) const;
+    void DestroyImage(VkImage image, VmaAllocation allocation) const;
 
     // Memory mapping
-    VkResult map_memory(VmaAllocation allocation, void** data) const;
-    void unmap_memory(VmaAllocation allocation) const;
+    VkResult MapMemory(VmaAllocation allocation, void** data) const;
+    void UnmapMemory(VmaAllocation allocation) const;
 
     // Memory flushing and invalidation
-    VkResult flush_allocation(VmaAllocation allocation, VkDeviceSize offset, VkDeviceSize size) const;
-    VkResult invalidate_allocation(VmaAllocation allocation, VkDeviceSize offset, VkDeviceSize size) const;
+    VkResult FlushAllocation(VmaAllocation allocation, VkDeviceSize offset, VkDeviceSize size) const;
+    VkResult InvalidateAllocation(VmaAllocation allocation, VkDeviceSize offset, VkDeviceSize size) const;
 
     // Allocation info
-    void get_allocation_info(VmaAllocation allocation, VmaAllocationInfo& allocation_info) const;
+    void GetAllocationInfo(VmaAllocation allocation, VmaAllocationInfo& allocation_info) const;
 
     // Statistics
-    void calculate_statistics(::VmaTotalStatistics& stats) const;
+    void CalculateStatistics(::VmaTotalStatistics& stats) const;
 
     // Budget information
-    void get_heap_budgets(::VmaBudget* budgets) const;
+    void GetHeapBudgets(::VmaBudget* budgets) const;
 
     // Memory type utilities
-    VkResult find_memory_type_index_for_buffer_info(const VkBufferCreateInfo& buffer_create_info,
+    VkResult FindMemoryTypeIndexForBufferInfo(const VkBufferCreateInfo& buffer_create_info,
                                              const VmaAllocationCreateInfo& allocation_create_info,
                                              uint32_t& memory_type_index) const;
 
-    VkResult find_memory_type_index_for_image_info(const VkImageCreateInfo& image_create_info,
+    VkResult FindMemoryTypeIndexForImageInfo(const VkImageCreateInfo& image_create_info,
                                             const VmaAllocationCreateInfo& allocation_create_info,
                                             uint32_t& memory_type_index) const;
 
     // Pool management
-    VkResult create_pool(const ::VmaPoolCreateInfo& create_info, ::VmaPool& pool) const;
-    void destroy_pool(::VmaPool pool) const;
+    VkResult CreatePool(const ::VmaPoolCreateInfo& create_info, ::VmaPool& pool) const;
+    void DestroyPool(::VmaPool pool) const;
 
     // Defragmentation (signatures aligned with current VMA API)
-    VkResult begin_defragmentation(const ::VmaDefragmentationInfo& info,
+    VkResult BeginDefragmentation(const ::VmaDefragmentationInfo& info,
                                  ::VmaDefragmentationContext& context) const;
 
-    VkResult end_defragmentation(::VmaDefragmentationContext context,
+    VkResult EndDefragmentation(::VmaDefragmentationContext context,
                                ::VmaDefragmentationStats* stats) const;
 
 private:
@@ -105,8 +105,8 @@ private:
     const Device* deviceRef_{nullptr};
 
     // Helper methods
-    void create_allocator(VmaAllocatorCreateFlags flags, uint32_t vulkan_api_version);
-    void cleanup();
+    void CreateAllocator(VmaAllocatorCreateFlags flags, uint32_t vulkan_api_version);
+    void Cleanup();
 };
 
 } // namespace VulkanEngine::RAII

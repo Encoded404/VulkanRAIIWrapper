@@ -30,7 +30,7 @@ CheckOptions:
   - key:    readability-identifier-naming.VariablePrefix
     value:  ''
   - key:    readability-identifier-naming.FunctionCase
-    value:  lower_case
+    value:  CamelCase
   - key:    readability-identifier-naming.FunctionPrefix
     value:  ''
   - key:    readability-identifier-naming.ParameterCase
@@ -48,15 +48,17 @@ CheckOptions:
   - key:    readability-identifier-naming.ProtectedMemberSuffix
     value:  '_'
   - key:    readability-identifier-naming.PublicMemberSuffix
-    value:  '_'
+    value:  ''
   - key:    readability-identifier-naming.ClassCase
     value:  CamelCase
   - key:    readability-identifier-naming.StructCase
     value:  CamelCase
   - key:    readability-identifier-naming.EnumCase
     value:  CamelCase
-  - key:    readability-identifier-naming.EnumConstantCase
+  - key:    readability-identifier-naming.EnumConstantCase # default case
     value:  UPPER_CASE
+  - key:    readability-identifier-naming.EnumConstantIgnoredRegexp # also allow CamelCase constants 
+    value:  '^[A-Z][_A-Z0-9]*$'   
   - key:    readability-identifier-naming.ConstantCase
     value:  aNy_CasE
   - key:    readability-identifier-naming.TypedefCase
@@ -74,7 +76,7 @@ CheckOptions:
 
 # Notes:
 # - `readability-identifier-naming` supports these cases: lower_case, UpperCamelCase (CamelCase), UPPER_CASE
-# - We use `lower_case` for variables/functions/parameters to approximate snake_case. clang-tidy doesn't have a
+# - We use `lower_case` for variables/parameters to approximate snake_case. clang-tidy doesn't have a
 #   direct `snake_case` token, but `lower_case` enforces lower letters separated by underscores.
-# - Types (classes/structs/typedefs/template parameters) use CamelCase (PascalCase).
+# - Types (classes/structs/typedefs/template parameters/functions) use CamelCase.
 # - If some third-party/generated files need exceptions, create a nested `.clang-tidy` in that folder with `Checks: -readability-identifier-naming`

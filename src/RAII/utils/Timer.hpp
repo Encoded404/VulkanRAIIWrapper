@@ -14,19 +14,19 @@ public:
     Timer() noexcept;
 
     // Start or resume timing. If already running, does nothing.
-    void start() noexcept;
+    void Start() noexcept;
     // Stop timing and accumulate the elapsed interval. If not running, does nothing.
-    void stop() noexcept;
+    void Stop() noexcept;
     // Reset accumulated time and running state.
-    void reset() noexcept;
+    void Reset() noexcept;
 
-    [[nodiscard]] bool is_running() const noexcept { return running_; }
+    [[nodiscard]] bool IsRunning() const noexcept { return running_; }
 
     // Elapsed time including current running segment (if any).
-    [[nodiscard]] double elapsed_seconds() const noexcept;
-    [[nodiscard]] double elapsed_milliseconds() const noexcept { return elapsed_seconds() * 1'000.0; }
-    [[nodiscard]] double elapsed_microseconds() const noexcept { return elapsed_seconds() * 1'000'000.0; }
-    [[nodiscard]] std::uint64_t elapsed_nanoseconds() const noexcept;
+    [[nodiscard]] double ElapsedSeconds() const noexcept;
+    [[nodiscard]] double ElapsedMilliseconds() const noexcept { return ElapsedSeconds() * 1'000.0; }
+    [[nodiscard]] double ElapsedMicroseconds() const noexcept { return ElapsedSeconds() * 1'000'000.0; }
+    [[nodiscard]] std::uint64_t ElapsedNanoseconds() const noexcept;
 
 private:
     using clock = std::chrono::steady_clock;

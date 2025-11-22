@@ -13,13 +13,13 @@ namespace VulkanEngine::RAII {
 
 CommandBuffer::CommandBuffer(VkCommandBuffer command_buffer, const CommandPool& command_pool)
         : commandBuffer_(command_buffer),
-            commandPool_(command_pool.get_handle()),
-            device_(command_pool.get_device()),
+            commandPool_(command_pool.GetHandle()),
+            device_(command_pool.GetDevice()),
             ownsCommandBuffer_(false) {}
 
 CommandBuffer::CommandBuffer(const CommandPool& command_pool, VkCommandBufferLevel level)
-        : commandPool_(command_pool.get_handle()),
-            device_(command_pool.get_device()),
+        : commandPool_(command_pool.GetHandle()),
+            device_(command_pool.GetDevice()),
       ownsCommandBuffer_(true) {
     VkCommandBufferAllocateInfo alloc_info{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
     alloc_info.commandPool = commandPool_;
@@ -32,7 +32,7 @@ CommandBuffer::CommandBuffer(const CommandPool& command_pool, VkCommandBufferLev
 }
 
 CommandBuffer::~CommandBuffer() {
-    cleanup();
+    Cleanup();
 }
 
 CommandBuffer::CommandBuffer(CommandBuffer&& other) noexcept
@@ -48,7 +48,7 @@ CommandBuffer::CommandBuffer(CommandBuffer&& other) noexcept
 
 CommandBuffer& CommandBuffer::operator=(CommandBuffer&& other) noexcept {
     if (this != &other) {
-        cleanup();
+        Cleanup();
         commandBuffer_ = other.commandBuffer_;
         commandPool_ = other.commandPool_;
         device_ = other.device_;
@@ -61,7 +61,7 @@ CommandBuffer& CommandBuffer::operator=(CommandBuffer&& other) noexcept {
     return *this;
 }
 
-void CommandBuffer::begin(VkCommandBufferUsageFlags flags,
+void CommandBuffer::Begin(VkCommandBufferUsageFlags flags,
                           const VkCommandBufferInheritanceInfo* inheritance_info) const {
     VkCommandBufferBeginInfo begin_info{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
     begin_info.flags = flags;
@@ -72,21 +72,21 @@ void CommandBuffer::begin(VkCommandBufferUsageFlags flags,
     }
 }
 
-void CommandBuffer::end() const {
+void CommandBuffer::End() const {
     if (vkEndCommandBuffer(commandBuffer_) != VK_SUCCESS) {
         throw std::runtime_error("Failed to record command buffer");
     }
 }
 
-void CommandBuffer::reset(VkCommandBufferResetFlags flags) const {
+void CommandBuffer::Reset(VkCommandBufferResetFlags flags) const {
     vkResetCommandBuffer(commandBuffer_, flags);
 }
 
-void CommandBuffer::bind_pipeline(VkPipelineBindPoint bind_point, VkPipeline pipeline) const {
+void CommandBuffer::BindPipeline(VkPipelineBindPoint bind_point, VkPipeline pipeline) const {
     vkCmdBindPipeline(commandBuffer_, bind_point, pipeline);
 }
 
-void CommandBuffer::bind_descriptor_sets(VkPipelineBindPoint bind_point,
+void CommandBuffer::BindDescriptorSets(VkPipelineBindPoint bind_point,
                                        VkPipelineLayout layout,
                                        uint32_t first_set,
                                        std::span<const VkDescriptorSet> descriptor_sets,
@@ -101,7 +101,7 @@ void CommandBuffer::bind_descriptor_sets(VkPipelineBindPoint bind_point,
                             dynamic_offsets.empty() ? nullptr : dynamic_offsets.data());
 }
 
-void CommandBuffer::bind_vertex_buffers(uint32_t first_binding,
+void CommandBuffer::BindVertexBuffers(uint32_t first_binding,
                                       std::span<const VkBuffer> buffers,
                                       std::span<const VkDeviceSize> offsets) const {
     // offsets must be at least as long as buffers when binding multiple buffers
@@ -113,18 +113,18 @@ void CommandBuffer::bind_vertex_buffers(uint32_t first_binding,
                            offsets.empty() ? nullptr : offsets.data());
 }
 
-void CommandBuffer::bind_index_buffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType index_type) const {
+void CommandBuffer::BindIndexBuffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType index_type) const {
     vkCmdBindIndexBuffer(commandBuffer_, buffer, offset, index_type);
 }
 
-void CommandBuffer::draw(uint32_t vertex_count,
+void CommandBuffer::Draw(uint32_t vertex_count,
                          uint32_t instance_count,
                          uint32_t first_vertex,
                          uint32_t first_instance) const {
     vkCmdDraw(commandBuffer_, vertex_count, instance_count, first_vertex, first_instance);
 }
 
-void CommandBuffer::draw_indexed(uint32_t index_count,
+void CommandBuffer::DrawIndexed(uint32_t index_count,
                                 uint32_t instance_count,
                                 uint32_t first_index,
                                 int32_t vertex_offset,
@@ -132,19 +132,19 @@ void CommandBuffer::draw_indexed(uint32_t index_count,
     vkCmdDrawIndexed(commandBuffer_, index_count, instance_count, first_index, vertex_offset, first_instance);
 }
 
-void CommandBuffer::draw_indexed_indirect(VkBuffer buffer,
+void CommandBuffer::DrawIndexedIndirect(VkBuffer buffer,
                                           VkDeviceSize offset,
                                           uint32_t draw_count,
                                           uint32_t stride) const {
     vkCmdDrawIndexedIndirect(commandBuffer_, buffer, offset, draw_count, stride);
 }
 
-void CommandBuffer::begin_render_pass(const VkRenderPassBeginInfo& render_pass_begin,
+void CommandBuffer::BeginRenderPass(const VkRenderPassBeginInfo& render_pass_begin,
                                     VkSubpassContents contents) const {
     vkCmdBeginRenderPass(commandBuffer_, &render_pass_begin, contents);
 }
 
-void CommandBuffer::begin_render_pass(VkRenderPass render_pass,
+void CommandBuffer::BeginRenderPass(VkRenderPass render_pass,
                                       const VkExtent2D extent,
                                       VkFramebuffer framebuffer,
                                       const VkClearValue& clear_value,
@@ -158,7 +158,7 @@ void CommandBuffer::begin_render_pass(VkRenderPass render_pass,
     begin_info.pClearValues = &clear_value;
     vkCmdBeginRenderPass(commandBuffer_, &begin_info, contents);
 }
-void CommandBuffer::begin_render_pass(VkRenderPass render_pass,
+void CommandBuffer::BeginRenderPass(VkRenderPass render_pass,
                                       const VkExtent2D extent,
                                       VkFramebuffer framebuffer,
                                       std::span<const VkClearValue> clear_values,
@@ -173,15 +173,15 @@ void CommandBuffer::begin_render_pass(VkRenderPass render_pass,
     vkCmdBeginRenderPass(commandBuffer_, &begin_info, contents);
 }
 
-void CommandBuffer::end_render_pass() const {
+void CommandBuffer::EndRenderPass() const {
     vkCmdEndRenderPass(commandBuffer_);
 }
 
-void CommandBuffer::next_subpass(VkSubpassContents contents) const {
+void CommandBuffer::NextSubpass(VkSubpassContents contents) const {
     vkCmdNextSubpass(commandBuffer_, contents);
 }
 
-void CommandBuffer::pipeline_barrier(VkPipelineStageFlags src_stage_mask,
+void CommandBuffer::PipelineBarrier(VkPipelineStageFlags src_stage_mask,
                                     VkPipelineStageFlags dst_stage_mask,
                                     VkDependencyFlags dependency_flags,
                                     std::span<const VkMemoryBarrier> memory_barriers,
@@ -199,7 +199,7 @@ void CommandBuffer::pipeline_barrier(VkPipelineStageFlags src_stage_mask,
                          image_memory_barriers.empty() ? nullptr : image_memory_barriers.data());
 }
 
-void CommandBuffer::copy_buffer(VkBuffer src_buffer, VkBuffer dst_buffer, std::span<const VkBufferCopy> regions) const {
+void CommandBuffer::CopyBuffer(VkBuffer src_buffer, VkBuffer dst_buffer, std::span<const VkBufferCopy> regions) const {
     vkCmdCopyBuffer(commandBuffer_,
                     src_buffer,
                     dst_buffer,
@@ -207,7 +207,7 @@ void CommandBuffer::copy_buffer(VkBuffer src_buffer, VkBuffer dst_buffer, std::s
                     regions.empty() ? nullptr : regions.data());
 }
 
-void CommandBuffer::copy_image(VkImage src_image,
+void CommandBuffer::CopyImage(VkImage src_image,
                               VkImageLayout src_image_layout,
                               VkImage dst_image,
                               VkImageLayout dst_image_layout,
@@ -221,7 +221,7 @@ void CommandBuffer::copy_image(VkImage src_image,
                    regions.empty() ? nullptr : regions.data());
 }
 
-void CommandBuffer::copy_buffer_to_image(VkBuffer src_buffer,
+void CommandBuffer::CopyBufferToImage(VkBuffer src_buffer,
                                       VkImage dst_image,
                                       VkImageLayout dst_image_layout,
                                       std::span<const VkBufferImageCopy> regions) const {
@@ -233,7 +233,7 @@ void CommandBuffer::copy_buffer_to_image(VkBuffer src_buffer,
                            regions.empty() ? nullptr : regions.data());
 }
 
-void CommandBuffer::push_constants(VkPipelineLayout layout,
+void CommandBuffer::PushConstants(VkPipelineLayout layout,
                                   VkShaderStageFlags stage_flags,
                                   uint32_t offset,
                                   uint32_t size,
@@ -241,7 +241,7 @@ void CommandBuffer::push_constants(VkPipelineLayout layout,
     vkCmdPushConstants(commandBuffer_, layout, stage_flags, offset, size, values);
 }
 
-void CommandBuffer::cleanup() {
+void CommandBuffer::Cleanup() {
     // Only free if this wrapper actually owns the command buffer
     if (ownsCommandBuffer_ && commandBuffer_ != VK_NULL_HANDLE) {
         vkFreeCommandBuffers(device_, commandPool_, 1, &commandBuffer_);

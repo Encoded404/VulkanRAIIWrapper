@@ -9,7 +9,7 @@
 namespace VulkanEngine::RAII::Utils {
 
 namespace {
-uint32_t format_size(VkFormat format) {
+uint32_t FormatSize(VkFormat format) {
     switch (format) {
         case VK_FORMAT_R8_UNORM:
         case VK_FORMAT_R8_SNORM:
@@ -85,7 +85,7 @@ uint32_t format_size(VkFormat format) {
     }
 }
 
-uint32_t component_count(VkFormat format) {
+uint32_t ComponentCount(VkFormat format) {
     switch (format) {
         case VK_FORMAT_R8_UNORM:
         case VK_FORMAT_R8_SNORM:
@@ -135,7 +135,7 @@ uint32_t component_count(VkFormat format) {
 }
 } // namespace
 
-bool FormatUtils::is_depth_format(VkFormat format) {
+bool FormatUtils::IsDepthFormat(VkFormat format) {
     switch (format) {
         case VK_FORMAT_D16_UNORM:
         case VK_FORMAT_X8_D24_UNORM_PACK32:
@@ -149,7 +149,7 @@ bool FormatUtils::is_depth_format(VkFormat format) {
     }
 }
 
-bool FormatUtils::is_stencil_format(VkFormat format) {
+bool FormatUtils::IsStencilFormat(VkFormat format) {
     switch (format) {
         case VK_FORMAT_S8_UINT:
         case VK_FORMAT_D16_UNORM_S8_UINT:
@@ -161,23 +161,23 @@ bool FormatUtils::is_stencil_format(VkFormat format) {
     }
 }
 
-bool FormatUtils::is_depth_stencil_format(VkFormat format) {
-    return is_depth_format(format) && is_stencil_format(format);
+bool FormatUtils::IsDepthStencilFormat(VkFormat format) {
+    return IsDepthFormat(format) && IsStencilFormat(format);
 }
 
-bool FormatUtils::is_color_format(VkFormat format) {
-    return !is_depth_format(format) && !is_stencil_format(format);
+bool FormatUtils::IsColorFormat(VkFormat format) {
+    return !IsDepthFormat(format) && !IsStencilFormat(format);
 }
 
-uint32_t FormatUtils::get_format_size(VkFormat format) {
-    return format_size(format);
+uint32_t FormatUtils::GetFormatSize(VkFormat format) {
+    return FormatSize(format);
 }
 
-uint32_t FormatUtils::get_format_component_count(VkFormat format) {
-    return component_count(format);
+uint32_t FormatUtils::GetFormatComponentCount(VkFormat format) {
+    return ComponentCount(format);
 }
 
-bool FormatUtils::is_compressed_format(VkFormat format) {
+bool FormatUtils::IsCompressedFormat(VkFormat format) {
     switch (format) {
         case VK_FORMAT_BC1_RGB_UNORM_BLOCK:
         case VK_FORMAT_BC1_RGB_SRGB_BLOCK:
@@ -203,7 +203,7 @@ bool FormatUtils::is_compressed_format(VkFormat format) {
     }
 }
 
-bool FormatUtils::is_integer_format(VkFormat format) {
+bool FormatUtils::IsIntegerFormat(VkFormat format) {
     switch (format) {
         case VK_FORMAT_R8_UINT:
         case VK_FORMAT_R8_SINT:
@@ -233,7 +233,7 @@ bool FormatUtils::is_integer_format(VkFormat format) {
     }
 }
 
-bool FormatUtils::is_normalized_format(VkFormat format) {
+bool FormatUtils::IsNormalizedFormat(VkFormat format) {
     switch (format) {
         case VK_FORMAT_R8_UNORM:
         case VK_FORMAT_R8G8_UNORM:
@@ -250,7 +250,7 @@ bool FormatUtils::is_normalized_format(VkFormat format) {
     }
 }
 
-bool FormatUtils::is_signed_format(VkFormat format) {
+bool FormatUtils::IsSignedFormat(VkFormat format) {
     switch (format) {
         case VK_FORMAT_R8_SNORM:
         case VK_FORMAT_R8_SINT:
@@ -276,7 +276,7 @@ bool FormatUtils::is_signed_format(VkFormat format) {
     }
 }
 
-bool FormatUtils::is_srgb_format(VkFormat format) {
+bool FormatUtils::IsSrgbFormat(VkFormat format) {
     switch (format) {
         case VK_FORMAT_R8_SRGB:
         case VK_FORMAT_R8G8_SRGB:
@@ -297,7 +297,7 @@ bool FormatUtils::is_srgb_format(VkFormat format) {
     }
 }
 
-VkFormat FormatUtils::find_supported_format(VkPhysicalDevice physical_device,
+VkFormat FormatUtils::FindSupportedFormat(VkPhysicalDevice physical_device,
                                           const std::vector<VkFormat>& candidates,
                                           VkImageTiling tiling,
                                           VkFormatFeatureFlags features) {
@@ -317,8 +317,8 @@ VkFormat FormatUtils::find_supported_format(VkPhysicalDevice physical_device,
     throw std::runtime_error("Failed to find supported format");
 }
 
-VkFormat FormatUtils::find_depth_format(VkPhysicalDevice physical_device) {
-    return find_supported_format(physical_device,
+VkFormat FormatUtils::FindDepthFormat(VkPhysicalDevice physical_device) {
+    return FindSupportedFormat(physical_device,
                                {VK_FORMAT_D32_SFLOAT,
                                 VK_FORMAT_D32_SFLOAT_S8_UINT,
                                 VK_FORMAT_D24_UNORM_S8_UINT,
@@ -327,8 +327,8 @@ VkFormat FormatUtils::find_depth_format(VkPhysicalDevice physical_device) {
                                VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 }
 
-VkFormat FormatUtils::find_depth_stencil_format(VkPhysicalDevice physical_device) {
-    return find_supported_format(physical_device,
+VkFormat FormatUtils::FindDepthStencilFormat(VkPhysicalDevice physical_device) {
+    return FindSupportedFormat(physical_device,
                                {VK_FORMAT_D32_SFLOAT_S8_UINT,
                                 VK_FORMAT_D24_UNORM_S8_UINT,
                                 VK_FORMAT_D16_UNORM_S8_UINT},
@@ -336,17 +336,17 @@ VkFormat FormatUtils::find_depth_stencil_format(VkPhysicalDevice physical_device
                                VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 }
 
-VkFormatProperties FormatUtils::get_format_properties(VkPhysicalDevice physical_device, VkFormat format) {
+VkFormatProperties FormatUtils::GetFormatProperties(VkPhysicalDevice physical_device, VkFormat format) {
     VkFormatProperties properties{};
     vkGetPhysicalDeviceFormatProperties(physical_device, format, &properties);
     return properties;
 }
 
-bool FormatUtils::supports_format_feature(VkPhysicalDevice physical_device,
+bool FormatUtils::SupportsFormatFeature(VkPhysicalDevice physical_device,
                                         VkFormat format,
                                         VkImageTiling tiling,
                                         VkFormatFeatureFlags feature) {
-    VkFormatProperties properties = get_format_properties(physical_device, format);
+    VkFormatProperties properties = GetFormatProperties(physical_device, format);
     if (tiling == VK_IMAGE_TILING_LINEAR) {
         return (properties.linearTilingFeatures & feature) == feature;
     }
@@ -356,11 +356,11 @@ bool FormatUtils::supports_format_feature(VkPhysicalDevice physical_device,
     return false;
 }
 
-uint32_t FormatUtils::get_bytes_per_pixel(VkFormat format) {
-    return format_size(format);
+uint32_t FormatUtils::GetBytesPerPixel(VkFormat format) {
+    return FormatSize(format);
 }
 
-void FormatUtils::get_block_size(VkFormat format,
+void FormatUtils::GetBlockSize(VkFormat format,
                                uint32_t& block_width,
                                uint32_t& block_height,
                                uint32_t& block_size) {
@@ -389,7 +389,7 @@ void FormatUtils::get_block_size(VkFormat format,
             break;
         default:
             block_width = block_height = 1;
-            block_size = get_bytes_per_pixel(format);
+            block_size = GetBytesPerPixel(format);
             break;
     }
 }

@@ -33,23 +33,23 @@ public:
     DebugMessenger(const DebugMessenger&) = delete;
     DebugMessenger& operator=(const DebugMessenger&) = delete;
 
-    [[nodiscard]] VkDebugUtilsMessengerEXT get_handle() const { return debugMessenger_; }
+    [[nodiscard]] VkDebugUtilsMessengerEXT GetHandle() const { return debugMessenger_; }
     
     // Implicit conversion to VkDebugUtilsMessengerEXT
     operator VkDebugUtilsMessengerEXT() const { return debugMessenger_; }
 
     // Check if the debug messenger is valid
-    [[nodiscard]] bool is_valid() const { return debugMessenger_ != VK_NULL_HANDLE; }
+    [[nodiscard]] bool IsValid() const { return debugMessenger_ != VK_NULL_HANDLE; }
 
     // Static debug callback function
-    static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
+    static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
         VkDebugUtilsMessageTypeFlagsEXT message_type,
         const VkDebugUtilsMessengerCallbackDataEXT* p_callback_data,
         void* p_user_data);
 
     // Get debug messenger create info (useful for instance creation)
-    static VkDebugUtilsMessengerCreateInfoEXT get_create_info(
+    static VkDebugUtilsMessengerCreateInfoEXT GetCreateInfo(
         VkDebugUtilsMessageSeverityFlagsEXT message_severity = 
             VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
             VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
@@ -64,7 +64,7 @@ private:
     VkInstance instance_{VK_NULL_HANDLE}; // Reference to the instance for cleanup
 
     // Helper methods
-    void create_debug_messenger(const Instance& instance,
+    void CreateDebugMessenger(const Instance& instance,
                              VkDebugUtilsMessageSeverityFlagsEXT message_severity,
                              VkDebugUtilsMessageTypeFlagsEXT message_type);
 };

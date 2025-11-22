@@ -15,15 +15,15 @@ VmaAllocator::VmaAllocator(const Instance& instance,
                            const Device& device,
                            VmaAllocatorCreateFlags flags,
                            uint32_t vulkan_api_version)
-        : instance_(instance.get_handle()),
-            physicalDevice_(physical_device.get_handle()),
-            device_(device.get_handle()),
+        : instance_(instance.GetHandle()),
+            physicalDevice_(physical_device.GetHandle()),
+            device_(device.GetHandle()),
             deviceRef_(&device) {
-    create_allocator(flags, vulkan_api_version);
+    CreateAllocator(flags, vulkan_api_version);
 }
 
 VmaAllocator::~VmaAllocator() {
-    cleanup();
+    Cleanup();
 }
 
 VmaAllocator::VmaAllocator(VmaAllocator&& other) noexcept
@@ -41,7 +41,7 @@ VmaAllocator::VmaAllocator(VmaAllocator&& other) noexcept
 
 VmaAllocator& VmaAllocator::operator=(VmaAllocator&& other) noexcept {
     if (this != &other) {
-        cleanup();
+        Cleanup();
         allocator_ = other.allocator_;
         instance_ = other.instance_;
         physicalDevice_ = other.physicalDevice_;
@@ -56,7 +56,7 @@ VmaAllocator& VmaAllocator::operator=(VmaAllocator&& other) noexcept {
     return *this;
 }
 
-VkResult VmaAllocator::create_buffer(const VkBufferCreateInfo& buffer_create_info,
+VkResult VmaAllocator::CreateBuffer(const VkBufferCreateInfo& buffer_create_info,
                                     const VmaAllocationCreateInfo& allocation_create_info,
                                     VkBuffer& buffer,
                                     VmaAllocation& allocation,
@@ -69,11 +69,11 @@ VkResult VmaAllocator::create_buffer(const VkBufferCreateInfo& buffer_create_inf
                            allocation_info);
 }
 
-void VmaAllocator::destroy_buffer(VkBuffer buffer, VmaAllocation allocation) const {
+void VmaAllocator::DestroyBuffer(VkBuffer buffer, VmaAllocation allocation) const {
     vmaDestroyBuffer(allocator_, buffer, allocation);
 }
 
-VkResult VmaAllocator::create_image(const VkImageCreateInfo& image_create_info,
+VkResult VmaAllocator::CreateImage(const VkImageCreateInfo& image_create_info,
                                    const VmaAllocationCreateInfo& allocation_create_info,
                                    VkImage& image,
                                    VmaAllocation& allocation,
@@ -86,39 +86,39 @@ VkResult VmaAllocator::create_image(const VkImageCreateInfo& image_create_info,
                           allocation_info);
 }
 
-void VmaAllocator::destroy_image(VkImage image, VmaAllocation allocation) const {
+void VmaAllocator::DestroyImage(VkImage image, VmaAllocation allocation) const {
     vmaDestroyImage(allocator_, image, allocation);
 }
 
-VkResult VmaAllocator::map_memory(VmaAllocation allocation, void** data) const {
+VkResult VmaAllocator::MapMemory(VmaAllocation allocation, void** data) const {
     return vmaMapMemory(allocator_, allocation, data);
 }
 
-void VmaAllocator::unmap_memory(VmaAllocation allocation) const {
+void VmaAllocator::UnmapMemory(VmaAllocation allocation) const {
     vmaUnmapMemory(allocator_, allocation);
 }
 
-VkResult VmaAllocator::flush_allocation(VmaAllocation allocation, VkDeviceSize offset, VkDeviceSize size) const {
+VkResult VmaAllocator::FlushAllocation(VmaAllocation allocation, VkDeviceSize offset, VkDeviceSize size) const {
     return vmaFlushAllocation(allocator_, allocation, offset, size);
 }
 
-VkResult VmaAllocator::invalidate_allocation(VmaAllocation allocation, VkDeviceSize offset, VkDeviceSize size) const {
+VkResult VmaAllocator::InvalidateAllocation(VmaAllocation allocation, VkDeviceSize offset, VkDeviceSize size) const {
     return vmaInvalidateAllocation(allocator_, allocation, offset, size);
 }
 
-void VmaAllocator::get_allocation_info(VmaAllocation allocation, VmaAllocationInfo& allocation_info) const {
+void VmaAllocator::GetAllocationInfo(VmaAllocation allocation, VmaAllocationInfo& allocation_info) const {
     vmaGetAllocationInfo(allocator_, allocation, &allocation_info);
 }
 
-void VmaAllocator::calculate_statistics(::VmaTotalStatistics& stats) const {
+void VmaAllocator::CalculateStatistics(::VmaTotalStatistics& stats) const {
     vmaCalculateStatistics(allocator_, &stats);
 }
 
-void VmaAllocator::get_heap_budgets(::VmaBudget* budgets) const {
+void VmaAllocator::GetHeapBudgets(::VmaBudget* budgets) const {
     vmaGetHeapBudgets(allocator_, budgets);
 }
 
-VkResult VmaAllocator::find_memory_type_index_for_buffer_info(const VkBufferCreateInfo& buffer_create_info,
+VkResult VmaAllocator::FindMemoryTypeIndexForBufferInfo(const VkBufferCreateInfo& buffer_create_info,
                                                         const VmaAllocationCreateInfo& allocation_create_info,
                                                         uint32_t& memory_type_index) const {
     return vmaFindMemoryTypeIndexForBufferInfo(allocator_,
@@ -127,7 +127,7 @@ VkResult VmaAllocator::find_memory_type_index_for_buffer_info(const VkBufferCrea
                                                &memory_type_index);
 }
 
-VkResult VmaAllocator::find_memory_type_index_for_image_info(const VkImageCreateInfo& image_create_info,
+VkResult VmaAllocator::FindMemoryTypeIndexForImageInfo(const VkImageCreateInfo& image_create_info,
                                                        const VmaAllocationCreateInfo& allocation_create_info,
                                                        uint32_t& memory_type_index) const {
     return vmaFindMemoryTypeIndexForImageInfo(allocator_,
@@ -136,26 +136,26 @@ VkResult VmaAllocator::find_memory_type_index_for_image_info(const VkImageCreate
                                               &memory_type_index);
 }
 
-VkResult VmaAllocator::create_pool(const ::VmaPoolCreateInfo& create_info, ::VmaPool& pool) const {
+VkResult VmaAllocator::CreatePool(const ::VmaPoolCreateInfo& create_info, ::VmaPool& pool) const {
     return vmaCreatePool(allocator_, &create_info, &pool);
 }
 
-void VmaAllocator::destroy_pool(::VmaPool pool) const {
+void VmaAllocator::DestroyPool(::VmaPool pool) const {
     vmaDestroyPool(allocator_, pool);
 }
 
-VkResult VmaAllocator::begin_defragmentation(const ::VmaDefragmentationInfo& info,
+VkResult VmaAllocator::BeginDefragmentation(const ::VmaDefragmentationInfo& info,
                                             ::VmaDefragmentationContext& context) const {
     return vmaBeginDefragmentation(allocator_, &info, &context);
 }
 
-VkResult VmaAllocator::end_defragmentation(::VmaDefragmentationContext context,
+VkResult VmaAllocator::EndDefragmentation(::VmaDefragmentationContext context,
                                           ::VmaDefragmentationStats* stats) const {
     vmaEndDefragmentation(allocator_, context, stats);
     return VK_SUCCESS;
 }
 
-void VmaAllocator::create_allocator(VmaAllocatorCreateFlags flags, uint32_t vulkan_api_version) {
+void VmaAllocator::CreateAllocator(VmaAllocatorCreateFlags flags, uint32_t vulkan_api_version) {
     VmaAllocatorCreateInfo create_info{};
     create_info.flags = flags;
     create_info.physicalDevice = physicalDevice_;
@@ -178,7 +178,7 @@ void VmaAllocator::create_allocator(VmaAllocatorCreateFlags flags, uint32_t vulk
     }
 }
 
-void VmaAllocator::cleanup() {
+void VmaAllocator::Cleanup() {
     if (allocator_ != VK_NULL_HANDLE) {
         vmaDestroyAllocator(allocator_);
         allocator_ = VK_NULL_HANDLE;

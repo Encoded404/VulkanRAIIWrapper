@@ -11,11 +11,11 @@ public:
     std::optional<uint32_t> presentFamily_;  // NOLINT
     std::optional<uint32_t> computeFamily_;  // NOLINT
     std::optional<uint32_t> transferFamily_; // NOLINT
-    [[nodiscard]] bool is_complete() const {
+    [[nodiscard]] bool IsComplete() const {
         return graphicsFamily_.has_value() && presentFamily_.has_value();
     }
 
-    [[nodiscard]] std::set<uint32_t> get_unique_indices() const {
+    [[nodiscard]] std::set<uint32_t> GetUniqueIndices() const {
         std::set<uint32_t> indices;
         if (graphicsFamily_.has_value()) indices.insert(graphicsFamily_.value());
         if (presentFamily_.has_value()) indices.insert(presentFamily_.value());

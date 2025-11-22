@@ -34,32 +34,32 @@ public:
     Surface(const Surface&) = delete;
     Surface& operator=(const Surface&) = delete;
 
-    [[nodiscard]] VkSurfaceKHR get_handle() const { return surface_; }
+    [[nodiscard]] VkSurfaceKHR GetHandle() const { return surface_; }
     
     // Implicit conversion to VkSurfaceKHR
     operator VkSurfaceKHR() const { return surface_; }
 
     // Check if the surface is valid
-    [[nodiscard]] bool is_valid() const { return surface_ != VK_NULL_HANDLE; }
+    [[nodiscard]] bool IsValid() const { return surface_ != VK_NULL_HANDLE; }
 
     // Get surface capabilities for a physical device
-    VkSurfaceCapabilitiesKHR get_capabilities(VkPhysicalDevice physical_device) const;
+    VkSurfaceCapabilitiesKHR GetCapabilities(VkPhysicalDevice physical_device) const;
 
     // Get surface formats for a physical device
-    std::vector<VkSurfaceFormatKHR> get_formats(VkPhysicalDevice physical_device) const;
+    std::vector<VkSurfaceFormatKHR> GetFormats(VkPhysicalDevice physical_device) const;
 
     // Get surface present modes for a physical device
-    std::vector<VkPresentModeKHR> get_present_modes(VkPhysicalDevice physical_device) const;
+    std::vector<VkPresentModeKHR> GetPresentModes(VkPhysicalDevice physical_device) const;
 
     // Check if physical device supports presentation to this surface
-    bool is_supported(VkPhysicalDevice physical_device, uint32_t queue_family_index) const;
+    bool IsSupported(VkPhysicalDevice physical_device, uint32_t queue_family_index) const;
 
     // Get drawable size from SDL window (useful for high DPI displays)
-    void get_drawable_size(SDL_Window* window, int* width, int* height) const;
+    void GetDrawableSize(SDL_Window* window, int* width, int* height) const;
 
     // SDL2-specific utility functions
-    static std::vector<const char*> get_required_instance_extensions(SDL_Window* window = nullptr);
-    static bool is_vulkan_supported();
+    static std::vector<const char*> GetRequiredInstanceExtensions(SDL_Window* window = nullptr);
+    static bool IsVulkanSupported();
 
 private:
     VkSurfaceKHR surface_{VK_NULL_HANDLE};
@@ -67,9 +67,9 @@ private:
     SDL_Window* window_{nullptr}; // Reference to SDL window (optional)
 
     // Helper methods
-    void create_surface_from_sdl(SDL_Window* window);
-    void create_surface(void* window_handle, void* platform_handle);
-    void cleanup();
+    void CreateSurfaceFromSdl(SDL_Window* window);
+    void CreateSurface(void* window_handle, void* platform_handle);
+    void Cleanup();
 };
 
 } // namespace VulkanEngine::RAII
