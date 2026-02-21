@@ -1,61 +1,10 @@
 #include "Image.hpp"
 
-#include "VmaAllocator.hpp"
 #include "../core/Device.hpp"
-#include <cstdint>
-#include <stdexcept>
-#include <vector>
 
+#include <stdexcept>
 
 namespace VulkanEngine::RAII {
-
-Image::Image(const VmaAllocator& allocator,
-             uint32_t width,
-             uint32_t height,
-             uint32_t depth,
-             uint32_t mip_levels,
-             uint32_t array_layers,
-             VkFormat format,
-             VkImageType image_type,
-             VkImageTiling tiling,
-             VkImageUsageFlags usage,
-             VkSampleCountFlagBits samples,
-             VmaMemoryUsage memory_usage)
-    : width_(width),
-      height_(height),
-      depth_(depth),
-      mipLevels_(mip_levels),
-      arrayLayers_(array_layers),
-      format_(format),
-      imageType_(image_type),
-      tiling_(tiling),
-      usage_(usage),
-      samples_(samples),
-      vmaAllocator_(allocator.GetHandle()),
-      device_(allocator.GetDevice()),
-      deviceRef_(allocator.GetDeviceRef()),
-      usingVMA_(true) {
-    VkImageCreateInfo image_info{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
-    image_info.imageType = image_type;
-    image_info.extent.width = width;
-    image_info.extent.height = height;
-    image_info.extent.depth = depth;
-    image_info.mipLevels = mip_levels;
-    image_info.arrayLayers = array_layers;
-    image_info.format = format;
-    image_info.tiling = tiling;
-    image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    image_info.usage = usage;
-    image_info.samples = samples;
-    image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-    VmaAllocationCreateInfo alloc_info{};
-    alloc_info.usage = memory_usage;
-
-    if (allocator.CreateImage(image_info, alloc_info, image_, allocation_, &allocationInfo_) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create image with VMA");
-    }
-}
 
 Image::Image(const Device& device,
              uint32_t width,
@@ -79,9 +28,7 @@ Image::Image(const Device& device,
       tiling_(tiling),
       usage_(usage),
       samples_(samples),
-      device_(device.GetHandle()),
-      deviceRef_(&device),
-      memoryProperties_(properties) {
+      device_(device.GetHandle()) {
     VkImageCreateInfo image_info{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
     image_info.imageType = image_type;
     image_info.extent.width = width;
@@ -148,18 +95,12 @@ Image::Image(Image&& other) noexcept
       tiling_(other.tiling_),
       usage_(other.usage_),
       samples_(other.samples_),
-      vmaAllocator_(other.vmaAllocator_),
-      allocation_(other.allocation_),
-      allocationInfo_(other.allocationInfo_),
       device_(other.device_),
-      deviceRef_(other.deviceRef_),
       memory_(other.memory_),
-      memoryProperties_(other.memoryProperties_),
-      usingVMA_(other.usingVMA_),
       ownsImage_(other.ownsImage_) {
     other.image_ = VK_NULL_HANDLE;
-    other.allocation_ = VK_NULL_HANDLE;
     other.memory_ = VK_NULL_HANDLE;
+    other.device_ = VK_NULL_HANDLE;
     other.ownsImage_ = false;
 }
 
@@ -177,19 +118,13 @@ Image& Image::operator=(Image&& other) noexcept {
         tiling_ = other.tiling_;
         usage_ = other.usage_;
         samples_ = other.samples_;
-        vmaAllocator_ = other.vmaAllocator_;
-        allocation_ = other.allocation_;
-        allocationInfo_ = other.allocationInfo_;
         device_ = other.device_;
-        deviceRef_ = other.deviceRef_;
         memory_ = other.memory_;
-        memoryProperties_ = other.memoryProperties_;
-        usingVMA_ = other.usingVMA_;
         ownsImage_ = other.ownsImage_;
 
         other.image_ = VK_NULL_HANDLE;
-        other.allocation_ = VK_NULL_HANDLE;
         other.memory_ = VK_NULL_HANDLE;
+        other.device_ = VK_NULL_HANDLE;
         other.ownsImage_ = false;
     }
     return *this;
@@ -201,6 +136,9 @@ VkImageView Image::CreateImageView(VkImageViewType view_type,
                                    uint32_t level_count,
                                    uint32_t base_array_layer,
                                    uint32_t layer_count) const {
+    if (device_ == VK_NULL_HANDLE) {
+        throw std::runtime_error("Cannot create image view without a valid device");
+    }
     VkImageViewCreateInfo view_info{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
     view_info.image = image_;
     view_info.viewType = view_type;
@@ -229,7 +167,6 @@ void Image::TransitionLayout(VkImageLayout old_layout,
     if (cmd == VK_NULL_HANDLE) {
         throw std::runtime_error("Image::transition_layout called without a valid command buffer");
     }
-    // Basic single-barrier implementation (no queue family ownership transfer)
     VkImageMemoryBarrier barrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
     barrier.oldLayout = old_layout;
     barrier.newLayout = new_layout;
@@ -293,27 +230,24 @@ void Image::GenerateMipmaps(VkFilter /*filter*/) {
 
 VkMemoryRequirements Image::GetMemoryRequirements() const {
     VkMemoryRequirements requirements{};
-    vkGetImageMemoryRequirements(device_, image_, &requirements);
+    if (device_ != VK_NULL_HANDLE) {
+        vkGetImageMemoryRequirements(device_, image_, &requirements);
+    }
     return requirements;
 }
 
 void Image::Cleanup() {
-    if (usingVMA_) {
-        if (image_ != VK_NULL_HANDLE && vmaAllocator_ != VK_NULL_HANDLE) {
-            vmaDestroyImage(vmaAllocator_, image_, allocation_);
-        }
-    } else if (ownsImage_) {
-        if (image_ != VK_NULL_HANDLE) {
-            vkDestroyImage(device_, image_, nullptr);
-        }
-        if (memory_ != VK_NULL_HANDLE) {
-            vkFreeMemory(device_, memory_, nullptr);
-        }
+    if (ownsImage_ && image_ != VK_NULL_HANDLE && device_ != VK_NULL_HANDLE) {
+        vkDestroyImage(device_, image_, nullptr);
     }
+    if (ownsImage_ && memory_ != VK_NULL_HANDLE && device_ != VK_NULL_HANDLE) {
+        vkFreeMemory(device_, memory_, nullptr);
+    }
+
     image_ = VK_NULL_HANDLE;
     memory_ = VK_NULL_HANDLE;
-    allocation_ = VK_NULL_HANDLE;
+    device_ = VK_NULL_HANDLE;
+    ownsImage_ = false;
 }
 
 } // namespace VulkanEngine::RAII
-

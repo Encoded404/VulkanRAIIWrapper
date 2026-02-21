@@ -2,32 +2,14 @@
 #define VULKAN_RAII_RESOURCES_IMAGE_HPP
 
 #include <volk.h>
-#include <vk_mem_alloc.h>
 #include <vector>
-
 
 namespace VulkanEngine::RAII {
 
-class Device; // Forward declaration
-class VmaAllocator; // Forward declaration
+class Device;
 
 class Image {
 public:
-    // Constructor that creates an image with VMA
-    Image(const VmaAllocator& allocator,
-          uint32_t width,
-          uint32_t height,
-          uint32_t depth = 1,
-          uint32_t mip_levels = 1,
-          uint32_t array_layers = 1,
-          VkFormat format = VK_FORMAT_R8G8B8A8_SRGB,
-          VkImageType image_type = VK_IMAGE_TYPE_2D,
-          VkImageTiling tiling = VK_IMAGE_TILING_OPTIMAL,
-          VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT,
-          VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT,
-          VmaMemoryUsage memory_usage = VMA_MEMORY_USAGE_AUTO);
-
-    // Constructor that creates an image with traditional Vulkan memory management
     Image(const Device& device,
           uint32_t width,
           uint32_t height,
@@ -41,7 +23,6 @@ public:
           VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT,
           VkMemoryPropertyFlags properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-    // Constructor that wraps an existing VkImage (doesn't own memory)
     Image(VkImage image,
           VkFormat format,
           uint32_t width,
@@ -50,26 +31,18 @@ public:
           uint32_t mip_levels = 1,
           uint32_t array_layers = 1);
 
-    // Destructor
     ~Image();
 
-    // Move constructor and assignment
     Image(Image&& other) noexcept;
     Image& operator=(Image&& other) noexcept;
 
-    // Delete copy constructor and assignment. this ensures unique ownership of the VkImage by only allowing moving.
     Image(const Image&) = delete;
     Image& operator=(const Image&) = delete;
 
     [[nodiscard]] VkImage GetHandle() const { return image_; }
-    
-    // Implicit conversion to VkImage
     operator VkImage() const { return image_; }
-
-    // Check if the image is valid
     [[nodiscard]] bool IsValid() const { return image_ != VK_NULL_HANDLE; }
 
-    // Get image properties
     [[nodiscard]] uint32_t GetWidth() const { return width_; }
     [[nodiscard]] uint32_t GetHeight() const { return height_; }
     [[nodiscard]] uint32_t GetDepth() const { return depth_; }
@@ -80,39 +53,31 @@ public:
     [[nodiscard]] VkImageUsageFlags GetUsage() const { return usage_; }
     [[nodiscard]] VkSampleCountFlagBits GetSamples() const { return samples_; }
 
-    // Create image view
     [[nodiscard]] VkImageView CreateImageView(VkImageViewType view_type = VK_IMAGE_VIEW_TYPE_2D,
-                               VkImageAspectFlags aspect_flags = VK_IMAGE_ASPECT_COLOR_BIT,
-                               uint32_t base_mip_level = 0,
-                               uint32_t level_count = VK_REMAINING_MIP_LEVELS,
-                               uint32_t base_array_layer = 0,
-                               uint32_t layer_count = VK_REMAINING_ARRAY_LAYERS) const;
+                                               VkImageAspectFlags aspect_flags = VK_IMAGE_ASPECT_COLOR_BIT,
+                                               uint32_t base_mip_level = 0,
+                                               uint32_t level_count = VK_REMAINING_MIP_LEVELS,
+                                               uint32_t base_array_layer = 0,
+                                               uint32_t layer_count = VK_REMAINING_ARRAY_LAYERS) const;
 
-    // Transition image layout
     void TransitionLayout(VkImageLayout old_layout,
-                         VkImageLayout new_layout,
-                         VkImageAspectFlags aspect_flags = VK_IMAGE_ASPECT_COLOR_BIT,
-                         uint32_t base_mip_level = 0,
-                         uint32_t level_count = VK_REMAINING_MIP_LEVELS,
-                         uint32_t base_array_layer = 0,
-                         uint32_t layer_count = VK_REMAINING_ARRAY_LAYERS,
-                         VkCommandBuffer cmd = VK_NULL_HANDLE);
+                          VkImageLayout new_layout,
+                          VkImageAspectFlags aspect_flags = VK_IMAGE_ASPECT_COLOR_BIT,
+                          uint32_t base_mip_level = 0,
+                          uint32_t level_count = VK_REMAINING_MIP_LEVELS,
+                          uint32_t base_array_layer = 0,
+                          uint32_t layer_count = VK_REMAINING_ARRAY_LAYERS,
+                          VkCommandBuffer cmd = VK_NULL_HANDLE);
 
-    // Copy from buffer
     void CopyFromBuffer(VkBuffer buffer,
-                       const std::vector<VkBufferImageCopy>& regions);
+                        const std::vector<VkBufferImageCopy>& regions);
 
-    // Copy to buffer
     void CopyToBuffer(VkBuffer buffer,
-                     const std::vector<VkBufferImageCopy>& regions);
+                      const std::vector<VkBufferImageCopy>& regions);
 
-    // Generate mipmaps
     void GenerateMipmaps(VkFilter filter = VK_FILTER_LINEAR);
 
-    // Get memory requirements
     [[nodiscard]] VkMemoryRequirements GetMemoryRequirements() const;
-
-    // Get device memory (for traditional Vulkan)
     [[nodiscard]] VkDeviceMemory GetMemory() const { return memory_; }
 
 private:
@@ -128,27 +93,14 @@ private:
     VkImageUsageFlags usage_{0};
     VkSampleCountFlagBits samples_{VK_SAMPLE_COUNT_1_BIT};
 
-    // VMA allocation
-      ::VmaAllocator vmaAllocator_{VK_NULL_HANDLE};
-    VmaAllocation allocation_{VK_NULL_HANDLE};
-    VmaAllocationInfo allocationInfo_{};
-
-    // Traditional Vulkan memory management
     VkDevice device_{VK_NULL_HANDLE};
-            const Device* deviceRef_{nullptr};
     VkDeviceMemory memory_{VK_NULL_HANDLE};
-    VkMemoryPropertyFlags memoryProperties_{0};
 
-    bool usingVMA_{false};
-    bool ownsImage_{true}; // Whether we created the image or just wrap it
+    bool ownsImage_{true};
 
-    // Helper methods
-    void CreateImage();
-    void AllocateMemory(VkMemoryPropertyFlags properties);
     void Cleanup();
 };
 
 } // namespace VulkanEngine::RAII
-
 
 #endif // VULKAN_RAII_RESOURCES_IMAGE_HPP

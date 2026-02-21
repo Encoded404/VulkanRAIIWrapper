@@ -29,7 +29,6 @@
 #include "resources/Image.hpp"
 #include "resources/Shader.hpp"
 #include "resources/Sampler.hpp"
-#include "resources/VmaAllocator.hpp"
 #include "resources/DescriptorSetLayout.hpp"
 #include "resources/DescriptorPool.hpp"
 #include "resources/PipelineLayout.hpp"

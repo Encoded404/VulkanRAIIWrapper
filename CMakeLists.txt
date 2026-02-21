@@ -92,29 +92,6 @@ else()
     message(STATUS "Using volk from vcpkg")
 endif()
 
-find_package(VulkanMemoryAllocator CONFIG QUIET)
-if(NOT VulkanMemoryAllocator_FOUND)
-    message(STATUS "VMA not found via vcpkg, trying to find vk_mem_alloc.h manually...")
-    find_path(VMA_INCLUDE_DIR vk_mem_alloc.h 
-        PATHS 
-            /usr/include
-            /usr/local/include
-            ${VULKAN_SDK}/include
-        PATH_SUFFIXES 
-            vma
-    )
-    
-    if(VMA_INCLUDE_DIR)
-        message(STATUS "Found VMA at: ${VMA_INCLUDE_DIR}")
-        add_library(GPUOpen::VulkanMemoryAllocator INTERFACE IMPORTED)
-        target_include_directories(GPUOpen::VulkanMemoryAllocator INTERFACE ${VMA_INCLUDE_DIR})
-    else()
-        message(FATAL_ERROR "VMA not found. Please install via vcpkg or system package manager.")
-    endif()
-else()
-    message(STATUS "Using VMA from vcpkg")
-endif()
-
 # Include subdirectories
 
 # Build the RAII library

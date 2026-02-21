@@ -1,6 +1,6 @@
 # VulkanRAIIWrapper
 
-A standalone RAII-centric C++20 wrapper layer around Vulkan objects (Instance, PhysicalDevice selection helpers, Device, Queues, Swapchain helpers, CommandPools, Images/Buffers via VMA, Debug Messenger, etc.). Designed for reuse across multiple Vulkan projects.
+A standalone RAII-centric C++20 wrapper layer around Vulkan objects (Instance, PhysicalDevice selection helpers, Device, Queues, Swapchain helpers, CommandPools, Images/Buffers via RAII helpers, Debug Messenger, etc.). Designed for reuse across multiple Vulkan projects.
 
 ## Features
 
@@ -16,7 +16,7 @@ This library was originally embedded inside `VulkanEngine_v4`, but now lives her
 
 ## Integration Overview
 
-Add this repository as a submodule, use CMake FetchContent, or install and consume via `find_package`. It focuses purely on Vulkan object lifetime and resource helpers; higher-level orchestration and rendering examples live in the `VulkanEngine v4` repository.
+Add this repository as a submodule, use CMake FetchContent. It focuses purely on Vulkan object lifetime and resource helpers; higher-level orchestration and rendering examples live in the `VulkanEngineV5` repository.
 
 ## Quick Start (as a dependency)
 
@@ -46,22 +46,14 @@ FetchContent_MakeAvailable(VulkanRAIIWrapper)
 target_link_libraries(YourApp PRIVATE VulkanRAIIWrapper)
 ```
 
-### Option 3: find_package (Installed)
-After you `cmake --install` this library:
-```cmake
-find_package(VulkanRAIIWrapper CONFIG REQUIRED)
-target_link_libraries(YourApp PRIVATE VulkanRAIIWrapper)
-```
-
 ## Basic Usage Example
 
-See the engine that uses this wrapper: [`VulkanEngine v4`](https://github.com/Encoded404/VulkanEngine_v4/)
+See the engine that uses this wrapper: [`VulkanEngineV5`](https://github.com/Encoded404/VulkanEngineV5/)
 
 ## Dependencies
 
 This project uses the following dependencies managed via vcpkg:
 - **Volk**: Meta-loader for Vulkan API
-- **VMA (Vulkan Memory Allocator)**: Memory allocation library for Vulkan
 - **SDL3**: Windowing/input with Vulkan support
 
 

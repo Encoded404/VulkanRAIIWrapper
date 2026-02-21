@@ -6,7 +6,6 @@
   "license": "MIT",
   "dependencies": [
     "volk",
-    "vulkan-memory-allocator",
     {
       "name": "sdl3",
       "default-features": false,

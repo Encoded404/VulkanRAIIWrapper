@@ -29,7 +29,6 @@ add_library(VulkanRAIIWrapper STATIC
     resources/Buffer.cpp
     resources/Image.cpp
     resources/Sampler.cpp
-    resources/VmaAllocator.cpp
     resources/DescriptorPool.cpp
     resources/DescriptorSetLayout.cpp
     resources/PipelineLayout.cpp
@@ -56,7 +55,7 @@ add_library(VulkanRAIIWrapper STATIC
     utils/Timer.cpp
 
     # library glue
-    Library_impl.cpp
+    $<$<NOT:$<BOOL:${EXCLUDE_VOLK_IMPL}>>:Library_impl.cpp>
 )
 
 # Backwards compatibility alias until downstreams migrate
@@ -71,11 +70,10 @@ target_compile_options(VulkanRAIIWrapper PRIVATE
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Werror>
 )
 
-# Link Vulkan, Volk, and VMA via vcpkg
+# Link Vulkan, Volk, and SDL via vcpkg
 target_link_libraries(VulkanRAIIWrapper PUBLIC 
     Vulkan::Vulkan
     volk::volk
-    GPUOpen::VulkanMemoryAllocator
     SDL3::SDL3
 )
 
