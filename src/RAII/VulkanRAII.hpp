@@ -45,8 +45,8 @@
 // Utilities
 #include "utils/VulkanUtils.hpp"
 
-// SDL2 Integration
-#include "SDL2Application.hpp"
+// SDL3 Integration helpers
+#include "SDL3Application.hpp"
 
 namespace VulkanEngine {
 namespace RAII {

@@ -140,8 +140,8 @@ public:
     SDLWindow(const SDLWindow&) = delete;
     SDLWindow& operator=(const SDLWindow&) = delete;
 
-    [[nodiscard]] SDL_Window* GetHandle() const { return window_; }
-    operator SDL_Window*() const { return window_; }
+    [[nodiscard]] ::SDL_Window* GetHandle() const { return window_; }
+    operator ::SDL_Window*() const { return window_; }
 
     [[nodiscard]] bool IsValid() const { return window_ != nullptr; }
 
@@ -150,7 +150,7 @@ public:
     void SetTitle(const char* title);
 
 private:
-    SDL_Window* window_{nullptr};
+    ::SDL_Window* window_{nullptr};
 };
 
 } // namespace VulkanEngine::RAII::Utils

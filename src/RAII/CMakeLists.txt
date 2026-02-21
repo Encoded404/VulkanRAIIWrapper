@@ -10,7 +10,7 @@ add_library(VulkanRAIIWrapper STATIC
     core/Device.cpp
 
     # application
-    SDL2Application.cpp
+    SDL3Application.cpp
 
     # presentation
     presentation/Surface.cpp
