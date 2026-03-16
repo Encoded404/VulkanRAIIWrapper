@@ -26,7 +26,8 @@ public:
               const Surface& surface,
               SDL_Window* window,
               VkPresentModeKHR preferred_present_mode = VK_PRESENT_MODE_MAILBOX_KHR,
-              VkSurfaceFormatKHR preferred_format = {VK_FORMAT_B8G8R8A8_SRGB, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR});
+              VkSurfaceFormatKHR preferred_format = {VK_FORMAT_B8G8R8A8_SRGB, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR},
+              uint32_t min_image_count = 0);
 
     // Constructor that creates a swapchain for the given device and surface
     Swapchain(const Device& device, 
@@ -34,7 +35,8 @@ public:
               uint32_t width, 
               uint32_t height,
               VkPresentModeKHR preferred_present_mode = VK_PRESENT_MODE_MAILBOX_KHR,
-              VkSurfaceFormatKHR preferred_format = {VK_FORMAT_B8G8R8A8_SRGB, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR});
+              VkSurfaceFormatKHR preferred_format = {VK_FORMAT_B8G8R8A8_SRGB, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR},
+              uint32_t min_image_count = 0);
 
     // Destructor
     ~Swapchain();

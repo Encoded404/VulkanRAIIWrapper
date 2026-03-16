@@ -2,10 +2,10 @@
 
 #include "VmaAllocator.hpp"
 #include "../core/Device.hpp"
+
 #include <cstdint>
 #include <stdexcept>
 #include <vector>
-
 
 namespace VulkanEngine::RAII {
 
@@ -22,19 +22,20 @@ Image::Image(const VmaAllocator& allocator,
              VkSampleCountFlagBits samples,
              VmaMemoryUsage memory_usage)
     : width_(width),
-      height_(height),
-      depth_(depth),
-      mipLevels_(mip_levels),
-      arrayLayers_(array_layers),
-      format_(format),
-      imageType_(image_type),
-      tiling_(tiling),
-      usage_(usage),
-      samples_(samples),
-      vmaAllocator_(allocator.GetHandle()),
-      device_(allocator.GetDevice()),
-      deviceRef_(allocator.GetDeviceRef()),
-      usingVMA_(true) {
+    height_(height),
+    depth_(depth),
+    mipLevels_(mip_levels),
+    arrayLayers_(array_layers),
+    format_(format),
+    imageType_(image_type),
+    tiling_(tiling),
+    usage_(usage),
+    samples_(samples),
+    vmaAllocator_(allocator.GetHandle()),
+    device_(allocator.GetDevice()),
+    deviceRef_(allocator.GetDeviceRef()),
+    usingVMA_(true)
+{
     VkImageCreateInfo image_info{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
     image_info.imageType = image_type;
     image_info.extent.width = width;
@@ -70,18 +71,19 @@ Image::Image(const Device& device,
              VkSampleCountFlagBits samples,
              VkMemoryPropertyFlags properties)
     : width_(width),
-      height_(height),
-      depth_(depth),
-      mipLevels_(mip_levels),
-      arrayLayers_(array_layers),
-      format_(format),
-      imageType_(image_type),
-      tiling_(tiling),
-      usage_(usage),
-      samples_(samples),
-      device_(device.GetHandle()),
-      deviceRef_(&device),
-      memoryProperties_(properties) {
+    height_(height),
+    depth_(depth),
+    mipLevels_(mip_levels),
+    arrayLayers_(array_layers),
+    format_(format),
+    imageType_(image_type),
+    tiling_(tiling),
+    usage_(usage),
+    samples_(samples),
+    device_(device.GetHandle()),
+    deviceRef_(&device),
+    memoryProperties_(properties)
+{
     VkImageCreateInfo image_info{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
     image_info.imageType = image_type;
     image_info.extent.width = width;
@@ -124,13 +126,13 @@ Image::Image(VkImage image,
              uint32_t mip_levels,
              uint32_t array_layers)
     : image_(image),
-      width_(width),
-      height_(height),
-      depth_(depth),
-      mipLevels_(mip_levels),
-      arrayLayers_(array_layers),
-      format_(format),
-      ownsImage_(false) {}
+    width_(width),
+    height_(height),
+    depth_(depth),
+    mipLevels_(mip_levels),
+    arrayLayers_(array_layers),
+    format_(format),
+    ownsImage_(false) {}
 
 Image::~Image() {
     Cleanup();
@@ -138,25 +140,26 @@ Image::~Image() {
 
 Image::Image(Image&& other) noexcept
     : image_(other.image_),
-      width_(other.width_),
-      height_(other.height_),
-      depth_(other.depth_),
-      mipLevels_(other.mipLevels_),
-      arrayLayers_(other.arrayLayers_),
-      format_(other.format_),
-      imageType_(other.imageType_),
-      tiling_(other.tiling_),
-      usage_(other.usage_),
-      samples_(other.samples_),
-      vmaAllocator_(other.vmaAllocator_),
-      allocation_(other.allocation_),
-      allocationInfo_(other.allocationInfo_),
-      device_(other.device_),
-      deviceRef_(other.deviceRef_),
-      memory_(other.memory_),
-      memoryProperties_(other.memoryProperties_),
-      usingVMA_(other.usingVMA_),
-      ownsImage_(other.ownsImage_) {
+    width_(other.width_),
+    height_(other.height_),
+    depth_(other.depth_),
+    mipLevels_(other.mipLevels_),
+    arrayLayers_(other.arrayLayers_),
+    format_(other.format_),
+    imageType_(other.imageType_),
+    tiling_(other.tiling_),
+    usage_(other.usage_),
+    samples_(other.samples_),
+    vmaAllocator_(other.vmaAllocator_),
+    allocation_(other.allocation_),
+    allocationInfo_(other.allocationInfo_),
+    device_(other.device_),
+    deviceRef_(other.deviceRef_),
+    memory_(other.memory_),
+    memoryProperties_(other.memoryProperties_),
+    usingVMA_(other.usingVMA_),
+    ownsImage_(other.ownsImage_)
+{
     other.image_ = VK_NULL_HANDLE;
     other.allocation_ = VK_NULL_HANDLE;
     other.memory_ = VK_NULL_HANDLE;
@@ -225,7 +228,8 @@ void Image::TransitionLayout(VkImageLayout old_layout,
                              uint32_t level_count,
                              uint32_t base_array_layer,
                              uint32_t layer_count,
-                             VkCommandBuffer cmd) {
+                             VkCommandBuffer cmd)
+{
     if (cmd == VK_NULL_HANDLE) {
         throw std::runtime_error("Image::transition_layout called without a valid command buffer");
     }
@@ -297,7 +301,8 @@ VkMemoryRequirements Image::GetMemoryRequirements() const {
     return requirements;
 }
 
-void Image::Cleanup() {
+void Image::Cleanup()
+{
     if (usingVMA_) {
         if (image_ != VK_NULL_HANDLE && vmaAllocator_ != VK_NULL_HANDLE) {
             vmaDestroyImage(vmaAllocator_, image_, allocation_);

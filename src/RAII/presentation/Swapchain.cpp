@@ -22,13 +22,16 @@ Swapchain::Swapchain(const Device& device,
                      const Surface& surface,
                      SDL_Window* window,
                      VkPresentModeKHR preferred_present_mode,
-                     VkSurfaceFormatKHR preferred_format)
-    : device_(device.GetHandle()),
-      surface_(surface.GetHandle()),
-    deviceRef_(&device),
-      window_(window),
-      presentMode_(preferred_present_mode),
-      surfaceFormat_(preferred_format) {
+                                         VkSurfaceFormatKHR preferred_format,
+                                         uint32_t min_image_count)
+        : device_(device.GetHandle()),
+        surface_(surface.GetHandle()),
+        deviceRef_(&device),
+        window_(window),
+        presentMode_(preferred_present_mode),
+        minImageCount_(min_image_count),
+        surfaceFormat_(preferred_format)
+{
     int width = 0;
     int height = 0;
     SDL_GetWindowSizeInPixels(window, &width, &height);
@@ -45,12 +48,15 @@ Swapchain::Swapchain(const Device& device,
                      uint32_t width,
                      uint32_t height,
                      VkPresentModeKHR preferred_present_mode,
-                     VkSurfaceFormatKHR preferred_format)
+                     VkSurfaceFormatKHR preferred_format,
+                     uint32_t min_image_count)
     : device_(device.GetHandle()),
-      surface_(surface.GetHandle()),
+    surface_(surface.GetHandle()),
     deviceRef_(&device),
-      presentMode_(preferred_present_mode),
-      surfaceFormat_(preferred_format) {
+    presentMode_(preferred_present_mode),
+    minImageCount_(min_image_count),
+    surfaceFormat_(preferred_format)
+{
     CreateSwapchain(width, height);
     CreateImageViews();
 }
@@ -61,23 +67,26 @@ Swapchain::~Swapchain() {
 
 Swapchain::Swapchain(Swapchain&& other) noexcept
     : swapchain_(other.swapchain_),
-      device_(other.device_),
-      surface_(other.surface_),
+    device_(other.device_),
+    surface_(other.surface_),
     deviceRef_(other.deviceRef_),
-      window_(other.window_),
-      imageViews_(std::move(other.imageViews_)),
-      imageFormat_(other.imageFormat_),
-      extent_(other.extent_),
-      presentMode_(other.presentMode_),
-      surfaceFormat_(other.surfaceFormat_),
-      needsRecreate_(other.needsRecreate_) {
+    window_(other.window_),
+    imageViews_(std::move(other.imageViews_)),
+    imageFormat_(other.imageFormat_),
+    extent_(other.extent_),
+    presentMode_(other.presentMode_),
+    minImageCount_(other.minImageCount_),
+    surfaceFormat_(other.surfaceFormat_),
+    needsRecreate_(other.needsRecreate_)
+{
     other.swapchain_ = VK_NULL_HANDLE;
     other.device_ = VK_NULL_HANDLE;
     other.surface_ = VK_NULL_HANDLE;
-    other.deviceRef_ = nullptr;
+        other.deviceRef_ = nullptr;
     other.window_ = nullptr;
     other.imageFormat_ = VK_FORMAT_UNDEFINED;
     other.extent_ = {0, 0};
+    other.minImageCount_ = 0;
     other.needsRecreate_ = false;
 }
 
@@ -87,22 +96,24 @@ Swapchain& Swapchain::operator=(Swapchain&& other) noexcept {
         swapchain_ = other.swapchain_;
         device_ = other.device_;
         surface_ = other.surface_;
-    deviceRef_ = other.deviceRef_;
+        deviceRef_ = other.deviceRef_;
         window_ = other.window_;
         imageViews_ = std::move(other.imageViews_);
         imageFormat_ = other.imageFormat_;
         extent_ = other.extent_;
         presentMode_ = other.presentMode_;
         surfaceFormat_ = other.surfaceFormat_;
+        minImageCount_ = other.minImageCount_;
         needsRecreate_ = other.needsRecreate_;
 
         other.swapchain_ = VK_NULL_HANDLE;
         other.device_ = VK_NULL_HANDLE;
         other.surface_ = VK_NULL_HANDLE;
-    other.deviceRef_ = nullptr;
+        other.deviceRef_ = nullptr;
         other.window_ = nullptr;
         other.imageFormat_ = VK_FORMAT_UNDEFINED;
         other.extent_ = {0, 0};
+        other.minImageCount_ = 0;
         other.needsRecreate_ = false;
     }
     return *this;

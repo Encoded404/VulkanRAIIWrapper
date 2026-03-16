@@ -11,7 +11,8 @@
 namespace VulkanEngine::RAII {
 
 namespace {
-void SetDebugNameInternal(VkDevice device, VkBuffer buffer, const char* name) {
+void SetDebugNameInternal(VkDevice device, VkBuffer buffer, const char* name)
+{
     if (!device || !buffer || !name) {
         return;
     }
@@ -32,10 +33,11 @@ Buffer::Buffer(const VmaAllocator& allocator,
                VmaAllocationCreateFlags flags,
                const char* name)
     : size_(size),
-      usage_(usage),
-      vmaAllocator_(allocator.GetHandle()),
-      device_(allocator.GetDevice()),
-      usingVMA_(true) {
+    usage_(usage),
+    vmaAllocator_(allocator.GetHandle()),
+    device_(allocator.GetDevice()),
+    usingVMA_(true)
+{
     VkBufferCreateInfo buffer_info{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
     buffer_info.size = size;
     buffer_info.usage = usage;
@@ -60,9 +62,10 @@ Buffer::Buffer(const Device& device,
                VkMemoryPropertyFlags properties,
                const char* name)
     : size_(size),
-      usage_(usage),
-      device_(device.GetHandle()),
-      memoryProperties_(properties) {
+    usage_(usage),
+    device_(device.GetHandle()),
+    memoryProperties_(properties)
+{
     if (device.CreateBuffer(size, usage, properties, buffer_, memory_) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create device buffer");
     }
@@ -72,23 +75,25 @@ Buffer::Buffer(const Device& device,
     }
 }
 
-Buffer::~Buffer() {
+Buffer::~Buffer()
+{
     Cleanup();
 }
 
 Buffer::Buffer(Buffer&& other) noexcept
     : buffer_(other.buffer_),
-      size_(other.size_),
-      usage_(other.usage_),
-      vmaAllocator_(other.vmaAllocator_),
-      allocation_(other.allocation_),
-      allocationInfo_(other.allocationInfo_),
-      device_(other.device_),
-      memory_(other.memory_),
-      memoryProperties_(other.memoryProperties_),
-      usingVMA_(other.usingVMA_),
-      mappedData_(other.mappedData_),
-      debugName_(std::move(other.debugName_)) {
+    size_(other.size_),
+    usage_(other.usage_),
+    vmaAllocator_(other.vmaAllocator_),
+    allocation_(other.allocation_),
+    allocationInfo_(other.allocationInfo_),
+    device_(other.device_),
+    memory_(other.memory_),
+    memoryProperties_(other.memoryProperties_),
+    usingVMA_(other.usingVMA_),
+    mappedData_(other.mappedData_),
+    debugName_(std::move(other.debugName_))
+{
     other.buffer_ = VK_NULL_HANDLE;
     other.allocation_ = VK_NULL_HANDLE;
     other.memory_ = VK_NULL_HANDLE;
@@ -121,7 +126,8 @@ Buffer& Buffer::operator=(Buffer&& other) noexcept {
     return *this;
 }
 
-void* Buffer::Map() {
+void* Buffer::Map()
+{
     if (!usingVMA_) {
         throw std::runtime_error("Buffer was not created with VMA; use mapMemory instead");
     }
@@ -133,14 +139,16 @@ void* Buffer::Map() {
     return mappedData_;
 }
 
-void Buffer::Unmap() {
+void Buffer::Unmap()
+{
     if (usingVMA_ && mappedData_) {
         vmaUnmapMemory(vmaAllocator_, allocation_);
         mappedData_ = nullptr;
     }
 }
 
-void* Buffer::MapMemory() {
+void* Buffer::MapMemory()
+{
     if (usingVMA_) {
         return Map();
     }
@@ -152,7 +160,8 @@ void* Buffer::MapMemory() {
     return mappedData_;
 }
 
-void Buffer::UnmapMemory() {
+void Buffer::UnmapMemory()
+{
     if (usingVMA_) {
         Unmap();
         return;
@@ -163,7 +172,8 @@ void Buffer::UnmapMemory() {
     }
 }
 
-void Buffer::WriteData(const void* data, VkDeviceSize size, VkDeviceSize offset) {
+void Buffer::WriteData(const void* data, VkDeviceSize size, VkDeviceSize offset)
+{
     if (!data) {
         throw std::invalid_argument("Data pointer must not be null");
     }
@@ -180,7 +190,8 @@ void Buffer::WriteData(const void* data, VkDeviceSize size, VkDeviceSize offset)
     }
 }
 
-void Buffer::ReadData(void* data, VkDeviceSize size, VkDeviceSize offset) {
+void Buffer::ReadData(void* data, VkDeviceSize size, VkDeviceSize offset)
+{
     if (!data) {
         throw std::invalid_argument("Data pointer must not be null");
     }
@@ -200,7 +211,8 @@ VkMemoryRequirements Buffer::GetMemoryRequirements() const {
     return requirements;
 }
 
-void Buffer::BindMemory(VkDeviceMemory memory, VkDeviceSize offset) {
+void Buffer::BindMemory(VkDeviceMemory memory, VkDeviceSize offset)
+{
     if (usingVMA_) {
         throw std::runtime_error("Cannot manually bind memory for VMA-managed buffer");
     }
@@ -208,7 +220,8 @@ void Buffer::BindMemory(VkDeviceMemory memory, VkDeviceSize offset) {
     memory_ = memory;
 }
 
-void Buffer::Flush(VkDeviceSize size, VkDeviceSize offset) {
+void Buffer::Flush(VkDeviceSize size, VkDeviceSize offset)
+{
     if (usingVMA_) {
         vmaFlushAllocation(vmaAllocator_, allocation_, offset, size);
         return;
@@ -220,7 +233,8 @@ void Buffer::Flush(VkDeviceSize size, VkDeviceSize offset) {
     vkFlushMappedMemoryRanges(device_, 1, &range);
 }
 
-void Buffer::Invalidate(VkDeviceSize size, VkDeviceSize offset) {
+void Buffer::Invalidate(VkDeviceSize size, VkDeviceSize offset)
+{
     if (usingVMA_) {
         vmaInvalidateAllocation(vmaAllocator_, allocation_, offset, size);
         return;
@@ -240,7 +254,8 @@ void Buffer::CopyFrom(VkCommandBuffer command_buffer,
                       const Buffer& src_buffer,
                       VkDeviceSize size,
                       VkDeviceSize src_offset,
-                      VkDeviceSize dst_offset) {
+                      VkDeviceSize dst_offset)
+{
     VkBufferCopy copy_region{};
     copy_region.srcOffset = src_offset;
     copy_region.dstOffset = dst_offset;
@@ -248,7 +263,8 @@ void Buffer::CopyFrom(VkCommandBuffer command_buffer,
     vkCmdCopyBuffer(command_buffer, src_buffer.GetHandle(), buffer_, 1, &copy_region);
 }
 
-void Buffer::SetDebugName(const char* name) {
+void Buffer::SetDebugName(const char* name)
+{
     if (!name) {
         return;
     }
@@ -328,7 +344,8 @@ Buffer Buffer::CreateStorageBuffer(const Device& device, VkDeviceSize size) {
                   VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 }
 
-void Buffer::Cleanup() {
+void Buffer::Cleanup()
+{
     if (mappedData_) {
         UnmapMemory();
     }

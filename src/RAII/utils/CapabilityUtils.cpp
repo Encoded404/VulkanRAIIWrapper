@@ -79,7 +79,8 @@ constexpr std::array<FeatureFlagEntry, 55> kFeatureFlagTable = {{
 
 std::unordered_map<std::string, CapabilityRequirement> AggregateRequests(
     const std::vector<NamedCapabilityRequest>& requests,
-    std::vector<std::string>& ordered_names) {
+    std::vector<std::string>& ordered_names)
+{
     std::unordered_map<std::string, CapabilityRequirement> merged;
     ordered_names.clear();
     ordered_names.reserve(requests.size());
@@ -101,7 +102,8 @@ std::unordered_map<std::string, CapabilityRequirement> AggregateRequests(
     return merged;
 }
 
-std::unordered_set<std::string> MakeAvailableSet(const std::vector<std::string>& available) {
+std::unordered_set<std::string> MakeAvailableSet(const std::vector<std::string>& available)
+{
     std::unordered_set<std::string> available_set;
     available_set.reserve(available.size());
     for (const std::string& name : available) {
@@ -110,7 +112,8 @@ std::unordered_set<std::string> MakeAvailableSet(const std::vector<std::string>&
     return available_set;
 }
 
-void EnsureVolkInitialized() {
+void EnsureVolkInitialized()
+{
     const VkResult result = volkInitialize();
     if (result != VK_SUCCESS) {
         throw std::runtime_error("Failed to initialize volk for capability queries");
@@ -120,7 +123,8 @@ void EnsureVolkInitialized() {
 } // namespace
 
 NamedCapabilityResolution ResolveNamedCapabilities(const std::vector<NamedCapabilityRequest>& requests,
-                                                     const std::vector<std::string>& available) {
+                                                   const std::vector<std::string>& available)
+{
     NamedCapabilityResolution resolution;
     if (requests.empty()) {
         return resolution;
@@ -150,8 +154,9 @@ NamedCapabilityResolution ResolveNamedCapabilities(const std::vector<NamedCapabi
 }
 
 FeatureResolution ResolveDeviceFeatures(const VkPhysicalDeviceFeatures& supported,
-                                          const VkPhysicalDeviceFeatures& required,
-                                          const VkPhysicalDeviceFeatures& optional) {
+                                        const VkPhysicalDeviceFeatures& required,
+                                        const VkPhysicalDeviceFeatures& optional)
+{
     FeatureResolution resolution{};
 
     for (const FeatureFlagEntry& entry : kFeatureFlagTable) {
@@ -180,7 +185,8 @@ FeatureResolution ResolveDeviceFeatures(const VkPhysicalDeviceFeatures& supporte
     return resolution;
 }
 
-std::vector<std::string> EnumerateInstanceExtensionNames() {
+std::vector<std::string> EnumerateInstanceExtensionNames()
+{
     EnsureVolkInitialized();
 
     uint32_t count = 0;
@@ -205,7 +211,8 @@ std::vector<std::string> EnumerateInstanceExtensionNames() {
     return names;
 }
 
-std::vector<std::string> EnumerateInstanceLayerNames() {
+std::vector<std::string> EnumerateInstanceLayerNames()
+{
     EnsureVolkInitialized();
 
     uint32_t count = 0;

@@ -14,8 +14,9 @@ PipelineLayout::PipelineLayout(const Device& device,
                                const std::vector<VkDescriptorSetLayout>& set_layouts,
                                const std::vector<VkPushConstantRange>& push_constant_ranges)
     : device_(device.GetHandle()),
-      setLayouts_(set_layouts),
-      pushConstantRanges_(push_constant_ranges) {
+    setLayouts_(set_layouts),
+    pushConstantRanges_(push_constant_ranges)
+{
     if (device.GetHandle() == VK_NULL_HANDLE) {
         throw std::invalid_argument("PipelineLayout requires a valid device");
     }
@@ -28,9 +29,10 @@ PipelineLayout::~PipelineLayout() {
 
 PipelineLayout::PipelineLayout(PipelineLayout&& other) noexcept
     : pipelineLayout_(other.pipelineLayout_),
-      device_(other.device_),
-      setLayouts_(std::move(other.setLayouts_)),
-      pushConstantRanges_(std::move(other.pushConstantRanges_)) {
+    device_(other.device_),
+    setLayouts_(std::move(other.setLayouts_)),
+    pushConstantRanges_(std::move(other.pushConstantRanges_))
+{
     other.pipelineLayout_ = VK_NULL_HANDLE;
     other.device_ = VK_NULL_HANDLE;
 }
@@ -54,7 +56,7 @@ PipelineLayout PipelineLayout::CreateSingleSet(const Device& device, VkDescripto
 }
 
 PipelineLayout PipelineLayout::CreatePushConstantsOnly(const Device& device,
-                                                        const std::vector<VkPushConstantRange>& push_constant_ranges) {
+                                                       const std::vector<VkPushConstantRange>& push_constant_ranges) {
     return PipelineLayout(device, {}, push_constant_ranges);
 }
 
@@ -62,7 +64,8 @@ PipelineLayout PipelineLayout::CreateEmpty(const Device& device) {
     return PipelineLayout(device, {}, {});
 }
 
-void PipelineLayout::CreatePipelineLayout() {
+void PipelineLayout::CreatePipelineLayout()
+{
     VkPipelineLayoutCreateInfo layout_info{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
     layout_info.setLayoutCount = static_cast<uint32_t>(setLayouts_.size());
     layout_info.pSetLayouts = setLayouts_.empty() ? nullptr : setLayouts_.data();
@@ -74,7 +77,8 @@ void PipelineLayout::CreatePipelineLayout() {
     }
 }
 
-void PipelineLayout::Cleanup() {
+void PipelineLayout::Cleanup()
+{
     if (pipelineLayout_ != VK_NULL_HANDLE) {
         vkDestroyPipelineLayout(device_, pipelineLayout_, nullptr);
         pipelineLayout_ = VK_NULL_HANDLE;

@@ -24,13 +24,14 @@
 namespace VulkanEngine::RAII {
 
 Renderer::Renderer(const Device& device,
-                                     Swapchain& swapchain,
-                                     const RenderPass& render_pass,
+                   Swapchain& swapchain,
+                   const RenderPass& render_pass,
                    uint32_t max_frames_in_flight)
     : device_(&device),
-            swapchain_(&swapchain),
-      renderPass_(&render_pass),
-      maxFramesInFlight_(std::max(1u, max_frames_in_flight)) {
+    swapchain_(&swapchain),
+    renderPass_(&render_pass),
+    maxFramesInFlight_(std::max(1u, max_frames_in_flight))
+{
     CreateCommandObjects();
     CreateSyncObjects(swapchain.GetImageCount());
     CreateFramebuffers();
@@ -42,19 +43,23 @@ Renderer::~Renderer() {
 
 Renderer::Renderer(Renderer&& other) noexcept
     : device_(other.device_),
-      swapchain_(other.swapchain_),
-      renderPass_(other.renderPass_),
-      maxFramesInFlight_(other.maxFramesInFlight_),
-      currentFrame_(other.currentFrame_),
-      imageIndex_(other.imageIndex_),
-      frameInProgress_(other.frameInProgress_),
-      needsSwapchainRecreation_(other.needsSwapchainRecreation_),
-      commandPools_(std::move(other.commandPools_)),
-      commandBuffers_(std::move(other.commandBuffers_)),
-      imageAvailableSemaphores_(std::move(other.imageAvailableSemaphores_)),
-      renderFinishedSemaphores_(std::move(other.renderFinishedSemaphores_)),
-      inFlightFences_(std::move(other.inFlightFences_)),
-      framebuffers_(std::move(other.framebuffers_)) {
+    swapchain_(other.swapchain_),
+    renderPass_(other.renderPass_),
+    maxFramesInFlight_(other.maxFramesInFlight_),
+    currentFrame_(other.currentFrame_),
+    imageIndex_(other.imageIndex_),
+    frameInProgress_(other.frameInProgress_),
+    needsSwapchainRecreation_(other.needsSwapchainRecreation_),
+    commandPools_(std::move(other.commandPools_)),
+    commandBuffers_(std::move(other.commandBuffers_)),
+    computeCommandPools_(std::move(other.computeCommandPools_)),
+    computeCommandBuffers_(std::move(other.computeCommandBuffers_)),
+    imageAvailableSemaphores_(std::move(other.imageAvailableSemaphores_)),
+    renderFinishedSemaphores_(std::move(other.renderFinishedSemaphores_)),
+    inFlightFences_(std::move(other.inFlightFences_)),
+    framebuffers_(std::move(other.framebuffers_)),
+    extraAttachments_(std::move(other.extraAttachments_))
+{
     other.device_ = nullptr;
     other.swapchain_ = nullptr;
     other.renderPass_ = nullptr;
@@ -63,6 +68,7 @@ Renderer::Renderer(Renderer&& other) noexcept
     other.imageIndex_ = 0;
     other.frameInProgress_ = false;
     other.needsSwapchainRecreation_ = false;
+    other.extraAttachments_.clear();
 }
 
 Renderer& Renderer::operator=(Renderer&& other) noexcept {
@@ -78,10 +84,13 @@ Renderer& Renderer::operator=(Renderer&& other) noexcept {
         needsSwapchainRecreation_ = other.needsSwapchainRecreation_;
         commandPools_ = std::move(other.commandPools_);
         commandBuffers_ = std::move(other.commandBuffers_);
+        computeCommandPools_ = std::move(other.computeCommandPools_);
+        computeCommandBuffers_ = std::move(other.computeCommandBuffers_);
         imageAvailableSemaphores_ = std::move(other.imageAvailableSemaphores_);
         renderFinishedSemaphores_ = std::move(other.renderFinishedSemaphores_);
         inFlightFences_ = std::move(other.inFlightFences_);
         framebuffers_ = std::move(other.framebuffers_);
+        extraAttachments_ = std::move(other.extraAttachments_);
 
         other.device_ = nullptr;
         other.swapchain_ = nullptr;
@@ -91,11 +100,13 @@ Renderer& Renderer::operator=(Renderer&& other) noexcept {
         other.imageIndex_ = 0;
         other.frameInProgress_ = false;
         other.needsSwapchainRecreation_ = false;
+        other.extraAttachments_.clear();
     }
     return *this;
 }
 
-bool Renderer::BeginFrame() {
+bool Renderer::BeginFrame()
+{
     if (frameInProgress_) {
         return false;
     }
@@ -131,11 +142,16 @@ bool Renderer::BeginFrame() {
     command_buffer.Reset();
     command_buffer.Begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
+    if (!computeCommandBuffers_.empty()) {
+        computeCommandBuffers_[currentFrame_]->Reset();
+    }
+
     frameInProgress_ = true;
     return true;
 }
 
-bool Renderer::EndFrame() {
+bool Renderer::EndFrame()
+{
     if (!frameInProgress_ || !device_ || !swapchain_) {
         return false;
     }
@@ -207,6 +223,16 @@ CommandBuffer& Renderer::GetCurrentCommandBuffer() {
     return *commandBuffers_[currentFrame_];
 }
 
+CommandBuffer& Renderer::GetCurrentComputeCommandBuffer() {
+    if (!frameInProgress_) {
+        throw std::runtime_error("No frame in progress");
+    }
+    if (computeCommandBuffers_.empty()) {
+        throw std::runtime_error("Compute command buffers are not available for this renderer");
+    }
+    return *computeCommandBuffers_[currentFrame_];
+}
+
 void Renderer::WaitIdle() {
     if (device_) {
         vkDeviceWaitIdle(device_->GetHandle());
@@ -239,7 +265,8 @@ void Renderer::Recreate(bool recreate_semaphores)
     CreateFramebuffers();
 }
 
-void Renderer::RecreateSemaphoreSyncObjects(uint32_t num_of_swapchain_images) {
+void Renderer::RecreateSemaphoreSyncObjects(uint32_t num_of_swapchain_images)
+{
     if (!device_ || !swapchain_) {
         std::cerr << "Renderer::recreate_semaphore_sync_objects called without valid device or swapchain" << '\n' << std::flush;
         return;
@@ -259,7 +286,8 @@ void Renderer::RecreateSemaphoreSyncObjects(uint32_t num_of_swapchain_images) {
     }
 }
 
-void Renderer::CreateSyncObjects(uint32_t num_of_swapchain_images) {
+void Renderer::CreateSyncObjects(uint32_t num_of_swapchain_images)
+{
     imageAvailableSemaphores_.clear();
     renderFinishedSemaphores_.clear();
     inFlightFences_.clear();
@@ -277,7 +305,8 @@ void Renderer::CreateSyncObjects(uint32_t num_of_swapchain_images) {
     }
 }
 
-void Renderer::CreateCommandObjects() {
+void Renderer::CreateCommandObjects()
+{
     if (!device_) {
         throw std::runtime_error("Renderer requires a valid device");
     }
@@ -289,6 +318,8 @@ void Renderer::CreateCommandObjects() {
 
     commandPools_.clear();
     commandBuffers_.clear();
+    computeCommandPools_.clear();
+    computeCommandBuffers_.clear();
 
     commandPools_.reserve(maxFramesInFlight_);
     commandBuffers_.reserve(maxFramesInFlight_);
@@ -298,6 +329,26 @@ void Renderer::CreateCommandObjects() {
         std::unique_ptr<VulkanEngine::RAII::CommandBuffer> buffer = std::make_unique<CommandBuffer>(*pool);
         commandPools_.push_back(std::move(pool));
         commandBuffers_.push_back(std::move(buffer));
+    }
+
+    CreateComputeCommandObjects(indices);
+}
+
+void Renderer::CreateComputeCommandObjects(const QueueFamilyIndices& indices)
+{
+    if (!indices.computeFamily_.has_value()) {
+        return;
+    }
+
+    const uint32_t compute_family = indices.computeFamily_.value();
+    computeCommandPools_.reserve(maxFramesInFlight_);
+    computeCommandBuffers_.reserve(maxFramesInFlight_);
+
+    for (uint32_t i = 0; i < maxFramesInFlight_; ++i) {
+        auto pool = std::make_unique<CommandPool>(*device_, compute_family);
+        auto buffer = std::make_unique<CommandBuffer>(*pool);
+        computeCommandPools_.push_back(std::move(pool));
+        computeCommandBuffers_.push_back(std::move(buffer));
     }
 }
 
@@ -311,6 +362,7 @@ void Renderer::CreateFramebuffers()
 
     const auto& image_views = swapchain_->GetImageViews();
     VkExtent2D extent = swapchain_->GetExtent();
+    const uint32_t required_attachment_count = renderPass_->GetAttachmentCount();
     bool include_extra = !extraAttachments_.empty() && extraAttachments_.size() == image_views.size();
     if (!extraAttachments_.empty() && extraAttachments_.size() != image_views.size()) {
         std::cerr << "Renderer::CreateFramebuffers: ignoring extra attachments due to size mismatch" << '\n';
@@ -324,6 +376,16 @@ void Renderer::CreateFramebuffers()
             const std::vector<VkImageView>& extras = extraAttachments_[i];
             attachments.insert(attachments.end(), extras.begin(), extras.end());
         }
+
+        if (required_attachment_count != attachments.size()) {
+            std::cerr << "Renderer::CreateFramebuffers: expected "
+                      << required_attachment_count
+                      << " attachments but received "
+                      << attachments.size()
+                      << ". Deferring framebuffer creation." << '\n';
+            framebuffers_.clear();
+            return;
+        }
         framebuffers_.push_back(std::make_unique<Framebuffer>(*device_,
                                                                *renderPass_,
                                                                attachments,
@@ -332,7 +394,8 @@ void Renderer::CreateFramebuffers()
     }
 }
 
-void Renderer::Cleanup() {
+void Renderer::Cleanup()
+{
     if (device_) {
         vkDeviceWaitIdle(device_->GetHandle());
     }
@@ -340,6 +403,8 @@ void Renderer::Cleanup() {
     framebuffers_.clear();
     commandBuffers_.clear();
     commandPools_.clear();
+    computeCommandBuffers_.clear();
+    computeCommandPools_.clear();
     imageAvailableSemaphores_.clear();
     renderFinishedSemaphores_.clear();
     inFlightFences_.clear();

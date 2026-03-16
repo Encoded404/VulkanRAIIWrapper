@@ -19,7 +19,8 @@ namespace VulkanEngine::RAII {
 
 Shader::Shader(const Device& device, const std::vector<uint32_t>& spirv_code)
     : device_(device.GetHandle()),
-      spirvCode_(spirv_code) {
+    spirvCode_(spirv_code)
+{
     if (device == VK_NULL_HANDLE) {
         throw std::invalid_argument("Shader requires a valid device");
     }
@@ -31,7 +32,8 @@ Shader::Shader(const Device& device, const std::vector<uint32_t>& spirv_code)
 
 Shader::Shader(const Device& device, const std::string& filename)
     : device_(device.GetHandle()),
-      spirvCode_(LoadSpirVFromFile(filename)) {
+    spirvCode_(LoadSpirVFromFile(filename))
+{
     if (device == VK_NULL_HANDLE) {
         throw std::invalid_argument("Shader requires a valid device");
     }
@@ -47,8 +49,9 @@ Shader::~Shader() {
 
 Shader::Shader(Shader&& other) noexcept
     : shaderModule_(other.shaderModule_),
-      device_(other.device_),
-      spirvCode_(std::move(other.spirvCode_)) {
+    device_(other.device_),
+    spirvCode_(std::move(other.spirvCode_))
+{
     other.shaderModule_ = VK_NULL_HANDLE;
     other.device_ = VK_NULL_HANDLE;
 }
@@ -77,7 +80,8 @@ VkPipelineShaderStageCreateInfo Shader::CreateStageInfo(VkShaderStageFlagBits st
     return stage_info;
 }
 
-std::vector<uint32_t> Shader::LoadSpirVFromFile(const std::string& filename) {
+std::vector<uint32_t> Shader::LoadSpirVFromFile(const std::string& filename)
+{
     std::ifstream file(filename, std::ios::binary | std::ios::ate);
     if (!file) {
         throw std::runtime_error("Failed to open SPIR-V file: " + filename);
@@ -98,7 +102,8 @@ std::vector<uint32_t> Shader::LoadSpirVFromFile(const std::string& filename) {
 
 std::vector<uint32_t> Shader::CompileGlslToSpirV(const std::string& /*source*/,
                                                  VkShaderStageFlagBits /*stage*/,
-                                                 const std::string& filename) {
+                                                 const std::string& filename)
+{
     throw std::runtime_error("GLSL to SPIR-V compilation is not available. Provide precompiled SPIR-V (" + filename + ")");
 }
 
@@ -108,7 +113,8 @@ Shader::ReflectionInfo Shader::Reflect() const {
     return {};
 }
 
-void Shader::CreateShaderModule(const std::vector<uint32_t>& code) {
+void Shader::CreateShaderModule(const std::vector<uint32_t>& code)
+{
     VkShaderModuleCreateInfo create_info{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
     create_info.codeSize = code.size() * sizeof(uint32_t);
     create_info.pCode = code.data();
@@ -118,7 +124,8 @@ void Shader::CreateShaderModule(const std::vector<uint32_t>& code) {
     }
 }
 
-void Shader::Cleanup() {
+void Shader::Cleanup()
+{
     if (shaderModule_ != VK_NULL_HANDLE) {
         vkDestroyShaderModule(device_, shaderModule_, nullptr);
         shaderModule_ = VK_NULL_HANDLE;
@@ -126,13 +133,15 @@ void Shader::Cleanup() {
     device_ = VK_NULL_HANDLE;
 }
 
-bool Shader::ValidateSpirV(const std::vector<uint32_t>& spirv_code) {
+bool Shader::ValidateSpirV(const std::vector<uint32_t>& spirv_code)
+{
     return !spirv_code.empty();
 }
-VkShaderStageFlagBits Shader::InferStageFromFilename(const std::string& filename) {
+VkShaderStageFlagBits Shader::InferStageFromFilename(const std::string& filename)
+{
     namespace fs = std::filesystem; // NOLINT(readability-identifier-naming)
     std::string extension = fs::path(filename).extension().string();
-    std::transform(extension.begin(), extension.end(), extension.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    std::ranges::transform(extension.begin(), extension.end(), extension.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
     if (extension == ".vert") {
         return VK_SHADER_STAGE_VERTEX_BIT;

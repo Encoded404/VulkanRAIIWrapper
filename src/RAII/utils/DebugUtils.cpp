@@ -10,7 +10,7 @@
 
 namespace VulkanEngine::RAII::Utils {
 
-std::string StringUtils::ResultToString(VkResult result) {
+std::string StringUtils::ResultToString(VkResult result){
     switch (result) {
         case VK_SUCCESS: return "VK_SUCCESS";
         case VK_NOT_READY: return "VK_NOT_READY";
@@ -121,7 +121,8 @@ bool ValidationUtils::CheckValidationLayerSupport(const std::vector<const char*>
     return true;
 }
 
-std::vector<const char*> ValidationUtils::GetRequiredExtensions(bool enable_validation_layers) {
+std::vector<const char*> ValidationUtils::GetRequiredExtensions(bool enable_validation_layers)
+{
     std::vector<const char*> extensions;
     extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
     if (enable_validation_layers) {
@@ -139,7 +140,8 @@ VKAPI_ATTR VkBool32 VKAPI_CALL ValidationUtils::DebugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
     VkDebugUtilsMessageTypeFlagsEXT message_type,
     const VkDebugUtilsMessengerCallbackDataEXT* p_callback_data,
-    void* /*pUserData*/) {
+    void* /*pUserData*/)
+{
     std::cerr << "Validation Layer [Severity: " << message_severity
               << ", Type: " << message_type
               << "]: " << (p_callback_data ? p_callback_data->pMessage : "<null>")
@@ -147,7 +149,8 @@ VKAPI_ATTR VkBool32 VKAPI_CALL ValidationUtils::DebugCallback(
     return VK_FALSE;
 }
 
-VkDebugUtilsMessengerCreateInfoEXT ValidationUtils::CreateDebugMessengerCreateInfo() {
+VkDebugUtilsMessengerCreateInfoEXT ValidationUtils::CreateDebugMessengerCreateInfo()
+{
     VkDebugUtilsMessengerCreateInfoEXT create_info{VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT};
     create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
                                  VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |

@@ -12,7 +12,8 @@
 namespace VulkanEngine::RAII {
 
 namespace {
-std::vector<VkPipelineShaderStageCreateInfo> BuildShaderStages(const std::vector<PipelineShaderStage>& stages) {
+std::vector<VkPipelineShaderStageCreateInfo> BuildShaderStages(const std::vector<PipelineShaderStage>& stages)
+{
     std::vector<VkPipelineShaderStageCreateInfo> shader_stages;
     shader_stages.reserve(stages.size());
     for (const auto& stage : stages) {
@@ -32,7 +33,8 @@ std::vector<VkPipelineShaderStageCreateInfo> BuildShaderStages(const std::vector
 
 VkPipelineVertexInputStateCreateInfo BuildVertexInputState(const PipelineVertexInput& vertex_input,
                                                            std::vector<VkVertexInputBindingDescription>& binding_descriptions,
-                                                           std::vector<VkVertexInputAttributeDescription>& attribute_descriptions) {
+                                                           std::vector<VkVertexInputAttributeDescription>& attribute_descriptions)
+{
     binding_descriptions = vertex_input.bindingDescriptions;
     attribute_descriptions = vertex_input.attributeDescriptions;
 
@@ -44,7 +46,8 @@ VkPipelineVertexInputStateCreateInfo BuildVertexInputState(const PipelineVertexI
     return vertex_input_info;
 }
 
-VkPipelineInputAssemblyStateCreateInfo BuildInputAssemblyState(const PipelineInputAssembly& input_assembly) {
+VkPipelineInputAssemblyStateCreateInfo BuildInputAssemblyState(const PipelineInputAssembly& input_assembly)
+{
     VkPipelineInputAssemblyStateCreateInfo info{VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO};
     info.topology = input_assembly.topology;
     info.primitiveRestartEnable = input_assembly.primitiveRestartEnable;
@@ -53,7 +56,8 @@ VkPipelineInputAssemblyStateCreateInfo BuildInputAssemblyState(const PipelineInp
 
 VkPipelineViewportStateCreateInfo BuildViewportState(const PipelineViewport& viewport_state,
                                                       std::vector<VkViewport>& viewports,
-                                                      std::vector<VkRect2D>& scissors) {
+                                                      std::vector<VkRect2D>& scissors)
+{
     viewports = viewport_state.viewports;
     scissors = viewport_state.scissors;
 
@@ -65,7 +69,8 @@ VkPipelineViewportStateCreateInfo BuildViewportState(const PipelineViewport& vie
     return info;
 }
 
-VkPipelineRasterizationStateCreateInfo BuildRasterizationState(const PipelineRasterization& rasterization) {
+VkPipelineRasterizationStateCreateInfo BuildRasterizationState(const PipelineRasterization& rasterization)
+{
     VkPipelineRasterizationStateCreateInfo info{VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO};
     info.depthClampEnable = rasterization.depthClampEnable;
     info.rasterizerDiscardEnable = rasterization.rasterizerDiscardEnable;
@@ -80,7 +85,8 @@ VkPipelineRasterizationStateCreateInfo BuildRasterizationState(const PipelineRas
     return info;
 }
 
-VkPipelineMultisampleStateCreateInfo BuildMultisampleState(const PipelineMultisample& multisample) {
+VkPipelineMultisampleStateCreateInfo BuildMultisampleState(const PipelineMultisample& multisample)
+{
     VkPipelineMultisampleStateCreateInfo info{VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO};
     info.rasterizationSamples = multisample.rasterizationSamples;
     info.sampleShadingEnable = multisample.sampleShadingEnable;
@@ -91,7 +97,8 @@ VkPipelineMultisampleStateCreateInfo BuildMultisampleState(const PipelineMultisa
     return info;
 }
 
-VkPipelineDepthStencilStateCreateInfo BuildDepthStencilState(const PipelineDepthStencil& depth_stencil) {
+VkPipelineDepthStencilStateCreateInfo BuildDepthStencilState(const PipelineDepthStencil& depth_stencil)
+{
     VkPipelineDepthStencilStateCreateInfo info{VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO};
     info.depthTestEnable = depth_stencil.depthTestEnable;
     info.depthWriteEnable = depth_stencil.depthWriteEnable;
@@ -106,7 +113,8 @@ VkPipelineDepthStencilStateCreateInfo BuildDepthStencilState(const PipelineDepth
 }
 
 VkPipelineColorBlendStateCreateInfo BuildColorBlendState(const PipelineColorBlend& color_blend,
-                                                          std::vector<VkPipelineColorBlendAttachmentState>& attachments) {
+                                                         std::vector<VkPipelineColorBlendAttachmentState>& attachments)
+{
     attachments = color_blend.attachments;
 
     VkPipelineColorBlendStateCreateInfo info{VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO};
@@ -122,7 +130,8 @@ VkPipelineColorBlendStateCreateInfo BuildColorBlendState(const PipelineColorBlen
 }
 
 VkPipelineDynamicStateCreateInfo BuildDynamicState(const std::vector<VkDynamicState>& dynamic_states,
-                                                    std::vector<VkDynamicState>& state_storage) {
+                                                   std::vector<VkDynamicState>& state_storage)
+{
     state_storage = dynamic_states;
     VkPipelineDynamicStateCreateInfo info{VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO};
     info.dynamicStateCount = static_cast<uint32_t>(state_storage.size());
@@ -147,8 +156,9 @@ Pipeline::Pipeline(const Device& device,
                    VkPipeline base_pipeline,
                    int32_t base_pipeline_index)
     : device_(device.GetHandle()),
-      layout_(layout),
-      type_(Type::GRAPHICS) {
+    layout_(layout),
+    type_(Type::GRAPHICS)
+{
     if (device == VK_NULL_HANDLE || layout == VK_NULL_HANDLE) {
         throw std::invalid_argument("Pipeline requires valid device and layout");
     }
@@ -184,8 +194,9 @@ Pipeline::Pipeline(const Device& device,
                    VkPipeline base_pipeline,
                    int32_t base_pipeline_index)
     : device_(device.GetHandle()),
-      layout_(layout),
-      type_(Type::GRAPHICS) {
+    layout_(layout),
+    type_(Type::GRAPHICS)
+{
     if (device == VK_NULL_HANDLE || layout == VK_NULL_HANDLE) {
         throw std::invalid_argument("Pipeline requires valid device and layout");
     }
@@ -211,8 +222,9 @@ Pipeline::Pipeline(const Device& device,
                    VkPipeline base_pipeline,
                    int32_t base_pipeline_index)
     : device_(device.GetHandle()),
-      layout_(layout),
-      type_(Type::COMPUTE) {
+    layout_(layout),
+    type_(Type::COMPUTE)
+{
     if (device == VK_NULL_HANDLE || layout == VK_NULL_HANDLE) {
         throw std::invalid_argument("Pipeline requires valid device and layout");
     }
@@ -225,9 +237,10 @@ Pipeline::~Pipeline() {
 
 Pipeline::Pipeline(Pipeline&& other) noexcept
     : pipeline_(other.pipeline_),
-      device_(other.device_),
-      layout_(other.layout_),
-      type_(other.type_) {
+    device_(other.device_),
+    layout_(other.layout_),
+    type_(other.type_)
+{
     other.pipeline_ = VK_NULL_HANDLE;
     other.device_ = VK_NULL_HANDLE;
     other.layout_ = VK_NULL_HANDLE;
@@ -261,8 +274,9 @@ void Pipeline::CreateGraphicsPipeline(const RenderPass& render_pass,
                                       const std::vector<VkDynamicState>& dynamic_states,
                                       uint32_t subpass,
                                       VkPipeline base_pipeline,
-                                      int32_t base_pipeline_index) {
-    auto vk_shader_stages = BuildShaderStages(shader_stages);
+                                      int32_t base_pipeline_index)
+{
+    std::vector<VkPipelineShaderStageCreateInfo> vk_shader_stages = BuildShaderStages(shader_stages);
 
     std::vector<VkVertexInputBindingDescription> binding_descriptions;
     std::vector<VkVertexInputAttributeDescription> attribute_descriptions;
@@ -321,8 +335,9 @@ void Pipeline::CreateGraphicsPipelineWithTessellation(const RenderPass& render_p
                                                       const std::vector<VkDynamicState>& dynamic_states,
                                                       uint32_t subpass,
                                                       VkPipeline base_pipeline,
-                                                      int32_t base_pipeline_index) {
-    auto vk_shader_stages = BuildShaderStages(shader_stages);
+                                                      int32_t base_pipeline_index)
+{
+    std::vector<VkPipelineShaderStageCreateInfo> vk_shader_stages = BuildShaderStages(shader_stages);
 
     std::vector<VkVertexInputBindingDescription> binding_descriptions;
     std::vector<VkVertexInputAttributeDescription> attribute_descriptions;
@@ -374,7 +389,8 @@ void Pipeline::CreateGraphicsPipelineWithTessellation(const RenderPass& render_p
 
 void Pipeline::CreateComputePipeline(const PipelineShaderStage& compute_stage,
                                      VkPipeline base_pipeline,
-                                     int32_t base_pipeline_index) {
+                                     int32_t base_pipeline_index)
+{
     if (compute_stage.module == VK_NULL_HANDLE || compute_stage.stage != VK_SHADER_STAGE_COMPUTE_BIT) {
         throw std::invalid_argument("Compute pipeline requires a compute shader stage");
     }
@@ -396,7 +412,8 @@ void Pipeline::CreateComputePipeline(const PipelineShaderStage& compute_stage,
     }
 }
 
-void Pipeline::Cleanup() {
+void Pipeline::Cleanup()
+{
     if (pipeline_ != VK_NULL_HANDLE) {
         vkDestroyPipeline(device_, pipeline_, nullptr);
         pipeline_ = VK_NULL_HANDLE;

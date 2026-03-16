@@ -17,9 +17,10 @@ RenderPass::RenderPass(const Device& device,
                        const std::vector<SubpassDescription>& subpasses,
                        const std::vector<SubpassDependency>& dependencies)
     : device_(device.GetHandle()),
-      attachments_(attachments),
-      subpasses_(subpasses),
-      dependencies_(dependencies) {
+    attachments_(attachments),
+    subpasses_(subpasses),
+    dependencies_(dependencies)
+{
     if (device == VK_NULL_HANDLE) {
         throw std::invalid_argument("RenderPass requires a valid device");
     }
@@ -37,7 +38,8 @@ RenderPass::RenderPass(const Device& device,
                        VkSampleCountFlagBits samples,
                        VkAttachmentLoadOp color_load_op,
                        VkAttachmentLoadOp depth_load_op)
-    : device_(device.GetHandle()) {
+    : device_(device.GetHandle())
+{
     if (device == VK_NULL_HANDLE) {
         throw std::invalid_argument("RenderPass requires a valid device");
     }
@@ -52,10 +54,11 @@ RenderPass::~RenderPass() {
 
 RenderPass::RenderPass(RenderPass&& other) noexcept
     : renderPass_(other.renderPass_),
-      device_(other.device_),
-      attachments_(std::move(other.attachments_)),
-      subpasses_(std::move(other.subpasses_)),
-      dependencies_(std::move(other.dependencies_)) {
+    device_(other.device_),
+    attachments_(std::move(other.attachments_)),
+    subpasses_(std::move(other.subpasses_)),
+    dependencies_(std::move(other.dependencies_))
+{
     other.renderPass_ = VK_NULL_HANDLE;
     other.device_ = VK_NULL_HANDLE;
 }
@@ -83,7 +86,8 @@ VkAttachmentReference RenderPass::CreateDepthAttachmentRef(uint32_t attachment, 
     return {attachment, layout};
 }
 
-void RenderPass::CreateRenderPass() {
+void RenderPass::CreateRenderPass()
+{
     std::vector<VkAttachmentDescription> vk_attachments = ConvertAttachments();
 
     std::vector<std::vector<VkAttachmentReference>> input_attachment_refs(subpasses_.size());
@@ -143,7 +147,8 @@ void RenderPass::CreateSimpleRenderPass(VkFormat color_format,
                                         VkFormat depth_format,
                                         VkSampleCountFlagBits samples,
                                         VkAttachmentLoadOp color_load_op,
-                                        VkAttachmentLoadOp depth_load_op) {
+                                        VkAttachmentLoadOp depth_load_op)
+{
     attachments_.clear();
     subpasses_.clear();
     dependencies_.clear();
@@ -195,7 +200,8 @@ void RenderPass::CreateSimpleRenderPass(VkFormat color_format,
     dependencies_.push_back(dependency);
 }
 
-void RenderPass::Cleanup() {
+void RenderPass::Cleanup()
+{
     if (renderPass_ != VK_NULL_HANDLE) {
         vkDestroyRenderPass(device_, renderPass_, nullptr);
         renderPass_ = VK_NULL_HANDLE;

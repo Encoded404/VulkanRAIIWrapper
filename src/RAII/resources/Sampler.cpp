@@ -23,11 +23,12 @@ Sampler::Sampler(const Device& device,
                  VkBorderColor border_color,
                  VkBool32 unnormalized_coordinates)
     : device_(device.GetHandle()),
-      magFilter_(mag_filter),
-      minFilter_(min_filter),
-      mipmapMode_(mipmap_mode),
-      maxAnisotropy_(max_anisotropy),
-      anisotropyEnable_(anisotropy_enable) {
+    magFilter_(mag_filter),
+    minFilter_(min_filter),
+    mipmapMode_(mipmap_mode),
+    maxAnisotropy_(max_anisotropy),
+    anisotropyEnable_(anisotropy_enable)
+{
     VkSamplerCreateInfo create_info{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
     create_info.magFilter = mag_filter;
     create_info.minFilter = min_filter;
@@ -50,11 +51,12 @@ Sampler::Sampler(const Device& device,
 
 Sampler::Sampler(const Device& device, const VkSamplerCreateInfo& create_info)
     : device_(device.GetHandle()),
-      magFilter_(create_info.magFilter),
-      minFilter_(create_info.minFilter),
-      mipmapMode_(create_info.mipmapMode),
-      maxAnisotropy_(create_info.maxAnisotropy),
-      anisotropyEnable_(create_info.anisotropyEnable) {
+    magFilter_(create_info.magFilter),
+    minFilter_(create_info.minFilter),
+    mipmapMode_(create_info.mipmapMode),
+    maxAnisotropy_(create_info.maxAnisotropy),
+    anisotropyEnable_(create_info.anisotropyEnable)
+{
     CreateSampler(create_info);
 }
 
@@ -64,12 +66,13 @@ Sampler::~Sampler() {
 
 Sampler::Sampler(Sampler&& other) noexcept
     : sampler_(other.sampler_),
-      device_(other.device_),
-      magFilter_(other.magFilter_),
-      minFilter_(other.minFilter_),
-      mipmapMode_(other.mipmapMode_),
-      maxAnisotropy_(other.maxAnisotropy_),
-      anisotropyEnable_(other.anisotropyEnable_) {
+    device_(other.device_),
+    magFilter_(other.magFilter_),
+    minFilter_(other.minFilter_),
+    mipmapMode_(other.mipmapMode_),
+    maxAnisotropy_(other.maxAnisotropy_),
+    anisotropyEnable_(other.anisotropyEnable_)
+{
     other.sampler_ = VK_NULL_HANDLE;
     other.device_ = VK_NULL_HANDLE;
 }
@@ -162,7 +165,8 @@ void Sampler::CreateSampler(const VkSamplerCreateInfo& create_info) {
     }
 }
 
-void Sampler::Cleanup() {
+void Sampler::Cleanup()
+{
     if (sampler_ != VK_NULL_HANDLE) {
         vkDestroySampler(device_, sampler_, nullptr);
         sampler_ = VK_NULL_HANDLE;

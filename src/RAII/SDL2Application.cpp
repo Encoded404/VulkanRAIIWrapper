@@ -458,10 +458,40 @@ bool SDLApplication::CreateVulkanObjects() {
                                        enabled_features,
                                        enabled_validation_layer_names);
 
+    resolvedSampleCount_ = config_.renderSurface.sampleCount;
+    resolvedColorLoadOp_ = config_.renderSurface.colorLoadOp;
+    resolvedDepthLoadOp_ = config_.renderSurface.depth.loadOp;
+    resolvedDepthFormat_ = VK_FORMAT_UNDEFINED;
+
+    if (resolvedSampleCount_ == 0) {
+        resolvedSampleCount_ = VK_SAMPLE_COUNT_1_BIT;
+    }
+
+    if (config_.renderSurface.depth.enabled) {
+        if (config_.renderSurface.depth.preferredFormat != VK_FORMAT_UNDEFINED) {
+            resolvedDepthFormat_ = config_.renderSurface.depth.preferredFormat;
+        } else {
+            try {
+                resolvedDepthFormat_ = device_->FindDepthFormat();
+            } catch (const std::exception& ex) {
+                std::cerr << "Failed to resolve depth format: " << ex.what() << '\n' << std::flush;
+                resolvedDepthFormat_ = VK_FORMAT_UNDEFINED;
+            }
+        }
+        if (resolvedDepthFormat_ == VK_FORMAT_UNDEFINED) {
+            std::cerr << "Depth buffer requested but no compatible format was found. Depth will be disabled." << '\n' << std::flush;
+        }
+    }
+
     VkPresentModeKHR present_mode = ChoosePresentMode(config_.enableVSync);
     VkSurfaceFormatKHR preferred_format{VK_FORMAT_B8G8R8A8_SRGB, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
 
-    swapchain_ = std::make_unique<Swapchain>(*device_, *surface_, window, present_mode, preferred_format);
+    swapchain_ = std::make_unique<Swapchain>(*device_,
+                                             *surface_,
+                                             window,
+                                             present_mode,
+                                             preferred_format,
+                                             config_.renderSurface.minImageCount);
 
     CreateRenderPass();
 
@@ -476,7 +506,33 @@ void SDLApplication::CreateRenderPass() {
     }
 
     VkFormat color_format = swapchain_->GetImageFormat();
-    renderPass_ = std::make_unique<RenderPass>(*device_, color_format);
+    if (config_.renderPassFactory) {
+        std::unique_ptr<RenderPass> custom = config_.renderPassFactory(
+            *device_,
+            *swapchain_,
+            config_.renderSurface,
+            resolvedDepthFormat_);
+        if (!custom) {
+            throw std::runtime_error("Custom render pass factory returned null");
+        }
+        renderPass_ = std::move(custom);
+        return;
+    }
+
+    renderPass_ = std::make_unique<RenderPass>(*device_,
+                                               color_format,
+                                               resolvedDepthFormat_,
+                                               resolvedSampleCount_,
+                                               resolvedColorLoadOp_,
+                                               resolvedDepthLoadOp_);
+}
+
+void SDLApplication::ApplyRendererAttachments(std::vector<std::vector<VkImageView>> attachments) {
+    if (!renderer_) {
+        return;
+    }
+    renderer_->SetExternalAttachments(std::move(attachments));
+    renderer_->RebuildFramebuffers();
 }
 
 void SDLApplication::SetRenderPass(std::unique_ptr<RenderPass> render_pass) {

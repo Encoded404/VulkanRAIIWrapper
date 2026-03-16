@@ -14,7 +14,8 @@ DescriptorSetLayout::DescriptorSetLayout(const Device& device,
                                          const std::vector<DescriptorSetLayoutBinding>& bindings,
                                          VkDescriptorSetLayoutCreateFlags flags)
     : device_(device.GetHandle()),
-      bindings_(ConvertBindings(bindings)) {
+    bindings_(ConvertBindings(bindings))
+{
     if (device == VK_NULL_HANDLE) {
         throw std::invalid_argument("DescriptorSetLayout requires a valid device");
     }
@@ -25,7 +26,8 @@ DescriptorSetLayout::DescriptorSetLayout(const Device& device,
                                          const std::vector<VkDescriptorSetLayoutBinding>& bindings,
                                          VkDescriptorSetLayoutCreateFlags flags)
     : device_(device.GetHandle()),
-      bindings_(bindings) {
+      bindings_(bindings)
+{
     if (device == VK_NULL_HANDLE) {
         throw std::invalid_argument("DescriptorSetLayout requires a valid device");
     }
@@ -38,8 +40,9 @@ DescriptorSetLayout::~DescriptorSetLayout() {
 
 DescriptorSetLayout::DescriptorSetLayout(DescriptorSetLayout&& other) noexcept
     : descriptorSetLayout_(other.descriptorSetLayout_),
-      device_(other.device_),
-      bindings_(std::move(other.bindings_)) {
+    device_(other.device_),
+    bindings_(std::move(other.bindings_))
+{
     other.descriptorSetLayout_ = VK_NULL_HANDLE;
     other.device_ = VK_NULL_HANDLE;
 }
@@ -90,12 +93,14 @@ DescriptorSetLayout DescriptorSetLayout::CreateSingleBinding(const Device& devic
                                                              uint32_t binding,
                                                              VkDescriptorType descriptor_type,
                                                              VkShaderStageFlags stage_flags,
-                                                             uint32_t descriptor_count) {
+                                                             uint32_t descriptor_count)
+{
     DescriptorSetLayoutBinding layout_binding{binding, descriptor_type, descriptor_count, stage_flags, nullptr};
     return DescriptorSetLayout(device, std::vector<DescriptorSetLayoutBinding>{layout_binding});
 }
 
-void DescriptorSetLayout::CreateDescriptorSetLayout(VkDescriptorSetLayoutCreateFlags flags) {
+void DescriptorSetLayout::CreateDescriptorSetLayout(VkDescriptorSetLayoutCreateFlags flags)
+{
     VkDescriptorSetLayoutCreateInfo layout_info{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
     layout_info.bindingCount = static_cast<uint32_t>(bindings_.size());
     layout_info.pBindings = bindings_.empty() ? nullptr : bindings_.data();
@@ -106,7 +111,8 @@ void DescriptorSetLayout::CreateDescriptorSetLayout(VkDescriptorSetLayoutCreateF
     }
 }
 
-void DescriptorSetLayout::Cleanup() {
+void DescriptorSetLayout::Cleanup()
+{
     if (descriptorSetLayout_ != VK_NULL_HANDLE) {
         vkDestroyDescriptorSetLayout(device_, descriptorSetLayout_, nullptr);
         descriptorSetLayout_ = VK_NULL_HANDLE;
@@ -114,7 +120,8 @@ void DescriptorSetLayout::Cleanup() {
     device_ = VK_NULL_HANDLE;
 }
 
-std::vector<VkDescriptorSetLayoutBinding> DescriptorSetLayout::ConvertBindings(const std::vector<DescriptorSetLayoutBinding>& bindings) {
+std::vector<VkDescriptorSetLayoutBinding> DescriptorSetLayout::ConvertBindings(const std::vector<DescriptorSetLayoutBinding>& bindings)
+{
     std::vector<VkDescriptorSetLayoutBinding> vk_bindings;
     vk_bindings.reserve(bindings.size());
     for (const auto& binding : bindings) {

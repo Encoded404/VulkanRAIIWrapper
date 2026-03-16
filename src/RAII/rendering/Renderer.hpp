@@ -5,6 +5,8 @@
 #include <vector>
 #include <memory>
 
+#include "../types/QueueFamilyIndices.hpp"
+
 // Forward declare SDL types
 struct SDL_Window;
 
@@ -48,10 +50,16 @@ public:
     // Get current command buffer for recording
     CommandBuffer& GetCurrentCommandBuffer();
 
-    // Get current frame index
+    // Access the per-frame compute command buffer when available
+    CommandBuffer& GetCurrentComputeCommandBuffer();
+
+    // Check if compute command buffers are provided
+    [[nodiscard]] bool HasComputeCommandBuffers() const { return !computeCommandBuffers_.empty(); }
+
+    // Get current frame index (frame in flight index)
     [[nodiscard]] uint32_t GetCurrentFrameIndex() const { return currentFrame_; }
 
-    // Get current image index
+    // Get current image index (swapchain image index)
     [[nodiscard]] uint32_t GetCurrentImageIndex() const { return imageIndex_; }
 
     // Check if frame is in progress
@@ -93,7 +101,7 @@ private:
     Swapchain* swapchain_{nullptr};
     const RenderPass* renderPass_{nullptr};
 
-    uint32_t maxFramesInFlight_{2};
+    uint32_t maxFramesInFlight_{3};
     uint32_t currentFrame_{0};
     uint32_t imageIndex_{0};
     bool frameInProgress_{false};
@@ -105,6 +113,8 @@ private:
     // Per-frame resources
     std::vector<std::unique_ptr<CommandPool>> commandPools_;
     std::vector<std::unique_ptr<CommandBuffer>> commandBuffers_;
+    std::vector<std::unique_ptr<CommandPool>> computeCommandPools_;
+    std::vector<std::unique_ptr<CommandBuffer>> computeCommandBuffers_;
     std::vector<std::unique_ptr<Semaphore>> imageAvailableSemaphores_;
     std::vector<std::unique_ptr<Semaphore>> renderFinishedSemaphores_;
     std::vector<std::unique_ptr<Fence>> inFlightFences_;
@@ -117,6 +127,7 @@ private:
     void CreateSyncObjects(uint32_t num_of_swapchain_images);
     void RecreateSemaphoreSyncObjects(uint32_t num_of_swapchain_images);
     void CreateCommandObjects();
+    void CreateComputeCommandObjects(const QueueFamilyIndices& indices);
     void CreateFramebuffers();
     void Cleanup();
 };

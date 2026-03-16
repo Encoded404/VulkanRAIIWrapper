@@ -10,12 +10,14 @@
 namespace VulkanEngine::RAII {
 
 Semaphore::Semaphore(const Device& device, VkSemaphoreCreateFlags flags)
-    : device_(device.GetHandle()) {
+    : device_(device.GetHandle())
+{
     CreateSemaphore(flags, nullptr);
 }
 
 Semaphore::Semaphore(const Device& device, uint64_t initial_value, VkSemaphoreCreateFlags flags)
-    : device_(device.GetHandle()), isTimelineSemaphore_(true) {
+    : device_(device.GetHandle()), isTimelineSemaphore_(true)
+{
     CreateSemaphore(flags, &initial_value);
 }
 
@@ -25,8 +27,9 @@ Semaphore::~Semaphore() {
 
 Semaphore::Semaphore(Semaphore&& other) noexcept
     : semaphore_(other.semaphore_),
-      device_(other.device_),
-      isTimelineSemaphore_(other.isTimelineSemaphore_) {
+    device_(other.device_),
+    isTimelineSemaphore_(other.isTimelineSemaphore_)
+{
     other.semaphore_ = VK_NULL_HANDLE;
     other.device_ = VK_NULL_HANDLE;
     other.isTimelineSemaphore_ = false;
@@ -74,7 +77,8 @@ VkResult Semaphore::WaitSemaphores(const Device& device,
                                    const std::vector<VkSemaphore>& semaphores,
                                    const std::vector<uint64_t>& values,
                                    bool wait_all,
-                                   uint64_t timeout) {
+                                   uint64_t timeout)
+{
     if (semaphores.size() != values.size()) {
         throw std::runtime_error("Semaphore wait arrays must be the same size");
     }
@@ -90,7 +94,8 @@ VkResult Semaphore::WaitSemaphores(const Device& device,
 
 VkResult Semaphore::SignalSemaphores(const Device& device,
                                      const std::vector<VkSemaphore>& semaphores,
-                                     const std::vector<uint64_t>& values) {
+                                     const std::vector<uint64_t>& values)
+{
     if (semaphores.size() != values.size()) {
         throw std::runtime_error("Semaphore signal arrays must be the same size");
     }
@@ -111,7 +116,8 @@ VkResult Semaphore::SignalSemaphores(const Device& device,
     return result;
 }
 
-void Semaphore::CreateSemaphore(VkSemaphoreCreateFlags flags, uint64_t* initial_value) {
+void Semaphore::CreateSemaphore(VkSemaphoreCreateFlags flags, uint64_t* initial_value)
+{
     VkSemaphoreCreateInfo semaphore_info{VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
     semaphore_info.flags = flags;
 
@@ -127,7 +133,8 @@ void Semaphore::CreateSemaphore(VkSemaphoreCreateFlags flags, uint64_t* initial_
     }
 }
 
-void Semaphore::Cleanup() {
+void Semaphore::Cleanup()
+{
     if (semaphore_ != VK_NULL_HANDLE) {
         vkDestroySemaphore(device_, semaphore_, nullptr);
         semaphore_ = VK_NULL_HANDLE;

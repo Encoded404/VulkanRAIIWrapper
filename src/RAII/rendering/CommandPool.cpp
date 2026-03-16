@@ -10,7 +10,8 @@ namespace VulkanEngine::RAII {
 CommandPool::CommandPool(const Device& device,
                          uint32_t queue_family_index,
                          VkCommandPoolCreateFlags flags)
-    : device_(device.GetHandle()), queueFamilyIndex_(queue_family_index) {
+    : device_(device.GetHandle()), queueFamilyIndex_(queue_family_index)
+{
     CreateCommandPool(flags);
 }
 
@@ -20,8 +21,9 @@ CommandPool::~CommandPool() {
 
 CommandPool::CommandPool(CommandPool&& other) noexcept
     : commandPool_(other.commandPool_),
-      device_(other.device_),
-      queueFamilyIndex_(other.queueFamilyIndex_) {
+    device_(other.device_),
+    queueFamilyIndex_(other.queueFamilyIndex_)
+{
     other.commandPool_ = VK_NULL_HANDLE;
     other.device_ = VK_NULL_HANDLE;
     other.queueFamilyIndex_ = 0;

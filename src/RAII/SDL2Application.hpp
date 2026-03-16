@@ -33,6 +33,19 @@ class SDLWindow;
 
 // Configuration structure for SDL Vulkan application
 struct SDLApplicationConfig {
+    struct DepthBufferConfig {
+        bool enabled = false;
+        VkFormat preferredFormat = VK_FORMAT_UNDEFINED;
+        VkAttachmentLoadOp loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    };
+
+    struct RenderSurfaceConfig {
+        VkSampleCountFlagBits sampleCount = VK_SAMPLE_COUNT_1_BIT;
+        VkAttachmentLoadOp colorLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        uint32_t minImageCount = 0;
+        DepthBufferConfig depth{};
+    };
+
     std::string windowTitle = "Vulkan Engine Application";
     int windowWidth = 1280;
     int windowHeight = 720;
@@ -49,6 +62,10 @@ struct SDLApplicationConfig {
     std::vector<Utils::NamedCapabilityRequest> deviceExtensions = {}; // Additional device extensions to enable
     VkPhysicalDeviceFeatures requiredDeviceFeatures = {}; // Required physical device features
     VkPhysicalDeviceFeatures optionalDeviceFeatures = {}; // Optional physical device features
+
+    RenderSurfaceConfig renderSurface{};
+    std::function<std::unique_ptr<RenderPass>(const Device&, const Swapchain&, const RenderSurfaceConfig&, VkFormat)>
+        renderPassFactory;
     
     // Optional application callbacks
     std::function<void(double delta_time)> updateCallback;
@@ -133,6 +150,10 @@ protected:
     virtual void CreateRenderPass();
     void SetRenderPass(std::unique_ptr<RenderPass> render_pass);
     virtual void HandleWindowResize();
+    void ApplyRendererAttachments(std::vector<std::vector<VkImageView>> attachments);
+
+    [[nodiscard]] VkFormat GetDepthFormat() const { return resolvedDepthFormat_; }
+    [[nodiscard]] VkSampleCountFlagBits GetSampleCount() const { return resolvedSampleCount_; }
 
 private:
     SDLApplicationConfig config_;
@@ -167,6 +188,11 @@ private:
     // bool recreate_swapchain();
     void Cleanup();
     void ShutdownInternal(bool call_callbacks);
+
+    VkFormat resolvedDepthFormat_{VK_FORMAT_UNDEFINED};
+    VkSampleCountFlagBits resolvedSampleCount_{VK_SAMPLE_COUNT_1_BIT};
+    VkAttachmentLoadOp resolvedColorLoadOp_{VK_ATTACHMENT_LOAD_OP_CLEAR};
+    VkAttachmentLoadOp resolvedDepthLoadOp_{VK_ATTACHMENT_LOAD_OP_CLEAR};
 };
 
 } // namespace VulkanEngine::RAII

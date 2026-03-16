@@ -13,20 +13,21 @@ namespace VulkanEngine::RAII {
 
 CommandBuffer::CommandBuffer(VkCommandBuffer command_buffer, const CommandPool& command_pool)
         : commandBuffer_(command_buffer),
-            commandPool_(command_pool.GetHandle()),
-            device_(command_pool.GetDevice()),
-            ownsCommandBuffer_(false) {}
+        commandPool_(command_pool.GetHandle()),
+        device_(command_pool.GetDevice()),
+        ownsCommandBuffer_(false) {}
 
 CommandBuffer::CommandBuffer(const CommandPool& command_pool, VkCommandBufferLevel level)
-        : commandPool_(command_pool.GetHandle()),
-            device_(command_pool.GetDevice()),
-      ownsCommandBuffer_(true) {
+    : commandPool_(command_pool.GetHandle()),
+    device_(command_pool.GetDevice()),
+    ownsCommandBuffer_(true)
+{
     VkCommandBufferAllocateInfo alloc_info{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
     alloc_info.commandPool = commandPool_;
     alloc_info.level = level;
     alloc_info.commandBufferCount = 1;
 
-        if (vkAllocateCommandBuffers(device_, &alloc_info, &commandBuffer_) != VK_SUCCESS) {
+    if (vkAllocateCommandBuffers(device_, &alloc_info, &commandBuffer_) != VK_SUCCESS) {
         throw std::runtime_error("Failed to allocate command buffer");
     }
 }
@@ -37,9 +38,10 @@ CommandBuffer::~CommandBuffer() {
 
 CommandBuffer::CommandBuffer(CommandBuffer&& other) noexcept
     : commandBuffer_(other.commandBuffer_),
-      commandPool_(other.commandPool_),
-      device_(other.device_),
-      ownsCommandBuffer_(other.ownsCommandBuffer_) {
+    commandPool_(other.commandPool_),
+    device_(other.device_),
+    ownsCommandBuffer_(other.ownsCommandBuffer_)
+{
     other.commandBuffer_ = VK_NULL_HANDLE;
     other.commandPool_ = VK_NULL_HANDLE;
     other.device_ = VK_NULL_HANDLE;
@@ -130,6 +132,17 @@ void CommandBuffer::DrawIndexed(uint32_t index_count,
                                 int32_t vertex_offset,
                                 uint32_t first_instance) const {
     vkCmdDrawIndexed(commandBuffer_, index_count, instance_count, first_index, vertex_offset, first_instance);
+}
+
+void CommandBuffer::Dispatch(uint32_t group_count_x,
+                             uint32_t group_count_y,
+                             uint32_t group_count_z) const {
+    vkCmdDispatch(commandBuffer_, group_count_x, group_count_y, group_count_z);
+}
+
+void CommandBuffer::DispatchIndirect(VkBuffer buffer,
+                                     VkDeviceSize offset) const {
+    vkCmdDispatchIndirect(commandBuffer_, buffer, offset);
 }
 
 void CommandBuffer::DrawIndexedIndirect(VkBuffer buffer,

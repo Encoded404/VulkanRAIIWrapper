@@ -14,7 +14,8 @@ Checks: >-
   -modernize-use-designated-initializers,
   -bugprone-easily-swappable-parameters,
 
-  -misc-const-correctness
+  -misc-const-correctness,
+  -misc-non-private-member-variables-in-classes,
 
   -performance-enum-size
 

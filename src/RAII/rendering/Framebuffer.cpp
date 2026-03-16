@@ -18,11 +18,12 @@ Framebuffer::Framebuffer(const Device& device,
                          uint32_t height,
                          uint32_t layers)
     : device_(device.GetHandle()),
-      renderPass_(render_pass.GetHandle()),
-      attachments_(attachments),
-      width_(width),
-      height_(height),
-      layers_(layers) {
+    renderPass_(render_pass.GetHandle()),
+    attachments_(attachments),
+    width_(width),
+    height_(height),
+    layers_(layers)
+{
     if (device == VK_NULL_HANDLE) {
         throw std::invalid_argument("Framebuffer requires a valid device");
     }
@@ -42,12 +43,13 @@ Framebuffer::~Framebuffer() {
 
 Framebuffer::Framebuffer(Framebuffer&& other) noexcept
     : framebuffer_(other.framebuffer_),
-      device_(other.device_),
-      renderPass_(other.renderPass_),
-      attachments_(std::move(other.attachments_)),
-      width_(other.width_),
-      height_(other.height_),
-      layers_(other.layers_) {
+    device_(other.device_),
+    renderPass_(other.renderPass_),
+    attachments_(std::move(other.attachments_)),
+    width_(other.width_),
+    height_(other.height_),
+    layers_(other.layers_)
+{
     other.framebuffer_ = VK_NULL_HANDLE;
     other.device_ = VK_NULL_HANDLE;
     other.renderPass_ = VK_NULL_HANDLE;

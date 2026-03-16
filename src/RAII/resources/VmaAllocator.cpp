@@ -15,10 +15,11 @@ VmaAllocator::VmaAllocator(const Instance& instance,
                            const Device& device,
                            VmaAllocatorCreateFlags flags,
                            uint32_t vulkan_api_version)
-        : instance_(instance.GetHandle()),
-            physicalDevice_(physical_device.GetHandle()),
-            device_(device.GetHandle()),
-            deviceRef_(&device) {
+    : instance_(instance.GetHandle()),
+    physicalDevice_(physical_device.GetHandle()),
+    device_(device.GetHandle()),
+    deviceRef_(&device)
+{
     CreateAllocator(flags, vulkan_api_version);
 }
 
@@ -27,11 +28,12 @@ VmaAllocator::~VmaAllocator() {
 }
 
 VmaAllocator::VmaAllocator(VmaAllocator&& other) noexcept
-        : allocator_(other.allocator_),
-            instance_(other.instance_),
-            physicalDevice_(other.physicalDevice_),
-            device_(other.device_),
-            deviceRef_(other.deviceRef_) {
+    : allocator_(other.allocator_),
+    instance_(other.instance_),
+    physicalDevice_(other.physicalDevice_),
+    device_(other.device_),
+    deviceRef_(other.deviceRef_)
+{
     other.allocator_ = VK_NULL_HANDLE;
     other.instance_ = VK_NULL_HANDLE;
     other.physicalDevice_ = VK_NULL_HANDLE;
@@ -155,7 +157,8 @@ VkResult VmaAllocator::EndDefragmentation(::VmaDefragmentationContext context,
     return VK_SUCCESS;
 }
 
-void VmaAllocator::CreateAllocator(VmaAllocatorCreateFlags flags, uint32_t vulkan_api_version) {
+void VmaAllocator::CreateAllocator(VmaAllocatorCreateFlags flags, uint32_t vulkan_api_version)
+{
     VmaAllocatorCreateInfo create_info{};
     create_info.flags = flags;
     create_info.physicalDevice = physicalDevice_;
@@ -178,7 +181,8 @@ void VmaAllocator::CreateAllocator(VmaAllocatorCreateFlags flags, uint32_t vulka
     }
 }
 
-void VmaAllocator::Cleanup() {
+void VmaAllocator::Cleanup()
+{
     if (allocator_ != VK_NULL_HANDLE) {
         vmaDestroyAllocator(allocator_);
         allocator_ = VK_NULL_HANDLE;

@@ -79,6 +79,13 @@ public:
                      uint32_t first_index = 0, int32_t vertex_offset = 0, 
                      uint32_t first_instance = 0) const;
 
+    void Dispatch(uint32_t group_count_x,
+                  uint32_t group_count_y,
+                  uint32_t group_count_z) const;
+
+    void DispatchIndirect(VkBuffer buffer,
+                          VkDeviceSize offset) const;
+
     // Issue one or many indexed draws based on commands stored in a GPU buffer.
     void DrawIndexedIndirect(VkBuffer buffer,
                                VkDeviceSize offset,

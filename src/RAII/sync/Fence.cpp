@@ -9,7 +9,8 @@
 namespace VulkanEngine::RAII {
 
 Fence::Fence(const Device& device, VkFenceCreateFlags flags)
-    : device_(device.GetHandle()) {
+    : device_(device.GetHandle())
+{
     CreateFence(flags);
 }
 
@@ -69,7 +70,8 @@ VkResult Fence::ResetFences(const Device& device,
                          fences.data());
 }
 
-VkResult Fence::WaitAndReset(uint64_t timeout) {
+VkResult Fence::WaitAndReset(uint64_t timeout)
+{
     VkResult result = Wait(timeout);
     if (result == VK_SUCCESS) {
         VkResult reset_result = Reset();
@@ -80,7 +82,8 @@ VkResult Fence::WaitAndReset(uint64_t timeout) {
     return result;
 }
 
-void Fence::CreateFence(VkFenceCreateFlags flags) {
+void Fence::CreateFence(VkFenceCreateFlags flags)
+{
     VkFenceCreateInfo fence_info{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
     fence_info.flags = flags;
 
@@ -89,7 +92,8 @@ void Fence::CreateFence(VkFenceCreateFlags flags) {
     }
 }
 
-void Fence::Cleanup() {
+void Fence::Cleanup()
+{
     if (fence_ != VK_NULL_HANDLE) {
         vkDestroyFence(device_, fence_, nullptr);
         fence_ = VK_NULL_HANDLE;
