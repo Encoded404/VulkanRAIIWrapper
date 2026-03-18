@@ -10,8 +10,10 @@
 #include <SDL3/SDL_video.h>
 
 #include <iostream>
-#include <stdexcept>
 #include <utility>
+#include <cstdint>
+#include <memory>
+#include <exception>
 
 namespace VulkanEngine::RAII {
 
