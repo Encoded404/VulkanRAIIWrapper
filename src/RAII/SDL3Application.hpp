@@ -10,6 +10,9 @@
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_video.h>
 
+struct SDL_Window;
+union SDL_Event;
+
 namespace VulkanEngine::RAII {
 
 namespace Utils {
@@ -17,8 +20,6 @@ namespace Utils {
     class SDLWindow;
 }
 
-struct SDL_Window;
-union SDL_Event;
 
 struct SDL3ApplicationConfig {
     std::string windowTitle = "Vulkan Engine Application";
