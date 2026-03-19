@@ -1,3 +1,6 @@
+# WARNING
+this was once used for my vulkan projects. since then ive gone over to simply using the official vulkan hpp headers, some of the stuff like the SDL3 integration has been moved into the engine github repo itself
+
 # VulkanRAIIWrapper
 
 A standalone RAII-centric C++20 wrapper layer around Vulkan objects (Instance, PhysicalDevice selection helpers, Device, Queues, Swapchain helpers, CommandPools, Images/Buffers via VMA, Debug Messenger, etc.). Designed for reuse across multiple Vulkan projects.
